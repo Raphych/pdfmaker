@@ -32,7 +32,7 @@ def draw_contact_details(contact: dict, label = None, colWidths=None):
     if contact['company'] != None:
         content.append([
             Paragraph(
-                f"{contact.get('company', '')} {''}",
+                f"{contact.get('company', '')} {tax_id_string}",
                 bold_style if label is None else normal_style
             )
         ])
@@ -41,6 +41,9 @@ def draw_contact_details(contact: dict, label = None, colWidths=None):
     for el in coordinates:
         content.append([Paragraph(el, normal_style)])
 
+    if len(content) == 0:
+        content.append([''])
+        
     table = Table(content, colWidths=colWidths)
     style = [
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Align content at the top
