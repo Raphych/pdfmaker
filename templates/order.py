@@ -27,7 +27,7 @@ def generate_order(buffer, data):
 
     elements = []
 
-    # Bill To and Ship To
+    # Details
     currency = data.get("paymentTerms", {'currency': "USD"}).get("currency", "USD")
     coordinates = draw_contact_details(data.get("coordinates", None))
     details = draw_order_details(data, currency)
@@ -54,6 +54,9 @@ def generate_order(buffer, data):
 
     if (data.get('portOfDischarge', None) is not None):
         additional_infos.append(["Port of Discharge", data['portOfDischarge']])
+    
+    if len(additional_infos) == 0:
+        additional_infos.append([''])
 
     shipping = draw_simple_table(additional_infos, [A4[0] / 5, A4[0] / 5 ], bold_cols=[0])
     paymentTerms = draw_payment_terms(data.get("paymentTerms", None))

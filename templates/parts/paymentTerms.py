@@ -27,6 +27,9 @@ def draw_payment_terms(payment_terms):
             Paragraph(f"{payment_terms['incoterms']} {payment_terms['incotermsDestination']}", styles['Normal'] )
         ])
 
+    if len(content) == 0:
+        content.append([''])
+
     table = Table(content, colWidths=[A4[0] / 6, A4[0] / 4 ])
     table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Align content at the top

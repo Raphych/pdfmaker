@@ -7,7 +7,7 @@ def draw_contact_details(contact: dict, label = None, colWidths=None):
     content = []
 
     if contact is None or contact.get('company', None) is None:
-        return Table([''], colWidths=colWidths)
+        return Table([['']], colWidths=[1])
 
     if (colWidths == None):
         width = A4[0] / 2 - 50*2
@@ -27,19 +27,17 @@ def draw_contact_details(contact: dict, label = None, colWidths=None):
     if label != None:
         content.append([Paragraph(label, bold_style)])
 
-    tax_id = contact.get('taxId', '')
-    tax_id_string = get_tax_id(tax_id) if tax_id is not None else ''
     # Format the label and return the rendered paragraph
-    if contact.get('company', None) != None:
+    tax_id_string = get_tax_id(contact.get('taxId', None))
+    if contact['company'] != None:
         content.append([
             Paragraph(
-                f"{contact['company']} {tax_id_string}",
+                f"{contact.get('company', '')} {''}",
                 bold_style if label is None else normal_style
             )
         ])
 
     coordinates = get_coordinates(contact)
-    # print(*coordinates)
     for el in coordinates:
         content.append([Paragraph(el, normal_style)])
 
@@ -59,36 +57,25 @@ def draw_contact_details(contact: dict, label = None, colWidths=None):
 
 def get_coordinates(contact: dict) -> str:
     infos = []
-    
-    # Create a function to fetch values from the contact
-    def get_value(key: str) -> str:
-        return contact.get(key, '')  # Return '' instead of None for cleaner output
 
-    # Gather address components
-    address_parts = [
-        get_value("address"),
-        get_value("city"),
-        get_value("province"),
-        get_value("country"),
-        get_value("zip")
-    ]
-    
-    # Join non-empty address components with a comma
-    address_string = ", ".join(filter(None, address_parts))
-    if address_string:  # Only append if address_string is not empty
-        infos.append(address_string)
+    def get_value(key: str, contact: dict):
+        return contact.get(key, None)
 
-    # Append email and phone, if they exist
-    email = get_value("email")
-    phone = get_value("phone")
+    infos.append(", ".join(
+        filter(None, [
+            get_value("address", contact),
+            get_value("city", contact),
+            get_value("province", contact),
+            get_value("country", contact),
+            get_value("zip", contact)
+        ])
+    ))
+    infos.append(get_value("email", contact))
+    infos.append(get_value("phone", contact))
 
-    if email:  # Only append if email is not an empty string
-        infos.append(email)
-    if phone:  # Only append if phone is not an empty string
-        infos.append(phone)
-
-    # Join all info components into a single string
-    return ", ".join(infos) if infos else ''  # Return empty string if infos is empty
+    if infos is None:
+        return ''
+    return infos if infos != None else ''
 
 
 def get_tax_id(tax_id: dict) -> str:

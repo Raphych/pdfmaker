@@ -59,6 +59,9 @@ def draw_shipping_details(shipping):
                 Paragraph(other, styles['Normal']),
                 ''
             ])
+
+    if len(content) == 0:
+        content.append([''])
     
     table = Table(content, colWidths=[A4[0] / 5, A4[0] / 5 ])
     style = TableStyle([
@@ -70,7 +73,7 @@ def draw_shipping_details(shipping):
         ('LINEBELOW', (0, 0), (-1, -1), 0, colors.transparent)  # No borders
     ])
 
-    if shipping['others'] != None:
+    if shipping.get('others', None) != None:
         for i in range(1, len(shipping['others']) + 1):
             style.add("SPAN", (0, -i ), (-1, -i) )
             style.add("FONTNAME", (0, -i ), (-1, -i), "Helvetica")
