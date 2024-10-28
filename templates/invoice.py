@@ -55,7 +55,6 @@ def generate_invoice(buffer, data):
     cargoValues = draw_simple_table(data.get("cargoValues", None), [A4[0] / 5, A4[0] / 5 ], bold_cols=[0])
     bankDetails = draw_simple_table(data.get("bankDetails", None), [A4[0] / 2.5], default_style=ParagraphStyle(name="Normal", fontName='Helvetica', fontSize=8 ))
     elements.append(draw_independent_columns([cargoValues, bankDetails], innerVerticalColumns=True ))
-    elements.append(Spacer(400, 20))
 
     # Build the PDF
     pdf.build(elements, canvasmaker=lambda *args, **kwargs: PageNumCanvas(*args, title=title, **kwargs))

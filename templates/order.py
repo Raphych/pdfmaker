@@ -61,7 +61,6 @@ def generate_order(buffer, data):
     shipping = draw_simple_table(additional_infos, [A4[0] / 5, A4[0] / 5 ], bold_cols=[0])
     paymentTerms = draw_payment_terms(data.get("paymentTerms", None))
     elements.append(draw_independent_columns([shipping, paymentTerms], innerVerticalColumns=True ))
-    # elements.append(Spacer(400, 20))
 
     # Build the PDF
     pdf.build(elements, canvasmaker=lambda *args, **kwargs: PageNumCanvas(*args, title=title, **kwargs))

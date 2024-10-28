@@ -27,7 +27,7 @@ def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
             ])
 
     total = sum([item['quantity'] * item['unitPrice'] for item in items]) if items is not None else 0
-
+    totalQty = sum(item['quantity'] for item in items)
 
     # Append discount rows (each discount on a separate line)
     if discounts is not None:
@@ -36,11 +36,11 @@ def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
             discountInfos = get_discount(discount['operator'], discount['amount'], total)
             discountAmount = discountInfos['amount']
             discountSummedTotal = discountInfos['summedTotal']
-            data.append(['', '', '', Paragraph(f"{description} {discountAmount}", styles['Normal']), '', '', format_currency(f"{-discountSummedTotal:.2f}", currency)])
+            data.append(['', '', '', '', Paragraph(f"{description} {discountAmount}", styles['Normal']), '', format_currency(f"{-discountSummedTotal}", currency)])
             total -= discountSummedTotal
 
     if (taxes is not None and len(taxes) > 0):
-        data.append(['', '', '', Paragraph('Subtotal', bold_style), '', '', format_currency(f"{total:.2f}", currency)])
+        data.append(['', '', '', '', Paragraph('Subtotal', bold_style), '', format_currency(f"{total}", currency)])
 
     grandTotal = total
     # Append tax rows (each tax on a separate line)
@@ -49,11 +49,12 @@ def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
             label = f"{tax['label']}"
             percentage = f"{tax['percentage']}%"
             summedTotal = (tax['percentage'] / 100) * total
-            data.append(['', '', '', Paragraph(f"{label} {percentage}", bold_style), '', '', format_currency(f"{summedTotal:.2f}", currency)])
+            data.append(['', '', '', '', Paragraph(f"{label} {percentage}", bold_style), '', format_currency(f"{summedTotal}", currency)])
             grandTotal += summedTotal
 
     # Optionally add a total row
-    data.append(['', '','', Paragraph('Total', bold_style),'','', Paragraph(format_currency(f"{grandTotal:.2f}", currency), bold_right_align_style)])
+    data.append(['', '','', '', Paragraph('Total', bold_style), '', Paragraph(format_currency(f"{grandTotal}", currency), bold_right_align_style)])
+    data[len(items)+1][3] = Paragraph(f"{totalQty:.3f}" if totalQty else '', bold_style)
 
     items_count = len(items) if items is not None else 0
     discount_count = len(discounts) if discounts is not None else 0
@@ -77,14 +78,14 @@ def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
         ('TOPPADDING', (0, 0), (-1, 0), 5),
         ('GRID', (0, 0), (-1, items_count ), 0.1, colors.black), #Items grid
         #Total Rows
-        ('FONTNAME', (3, items_count + discount_count +1), (-1, -1), 'Helvetica-Bold'), #Bold
-        ('GRID', (3, items_count +1), (-1, -1), 0.4, colors.black), #Total grid
-        ('BOX', (3, items_count + discount_count +1), (-1, -1), 1.5, colors.black )
+        ('FONTNAME', (4, items_count + discount_count +1), (-1, -1), 'Helvetica-Bold'), #Bold
+        ('GRID', (4, items_count +1), (-1, -1), 0.4, colors.black), #Total grid
+        ('BOX', (4, items_count + discount_count +1), (-1, -1), 1.5, colors.black )
     ])
 
     for i in range(1, total_rows_count+1):
         style.add('SPAN', (0, -i), (2, -i) )
-        style.add('SPAN', (3, -i), (5, -i) )
+        style.add('SPAN', (4, -i), (5, -i) )
 
     table.setStyle(style)
     return table

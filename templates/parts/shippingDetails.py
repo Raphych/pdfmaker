@@ -10,6 +10,25 @@ def draw_shipping_details(shipping):
     styles = getSampleStyleSheet()
     bold_style = ParagraphStyle(name='Bold', parent=styles['Normal'], fontName='Helvetica-Bold')
 
+    
+    if shipping.get('bkgNumber', None) != None:
+        content.append([
+            Paragraph("Booking #", bold_style ),
+            Paragraph(shipping['bkgNumber'], styles['Normal'] )
+        ])
+    
+    if shipping.get('blNumber', None) != None:
+        content.append([
+            Paragraph("Bill of Lading #", bold_style ),
+            Paragraph(shipping['blNumber'], styles['Normal'] )
+        ])
+
+    if shipping.get('blRelease', None) != None:
+        content.append([
+            Paragraph("Bill of Lading Type", bold_style ),
+            Paragraph(shipping['blRelease'], styles['Normal'] )
+        ])
+
     if shipping.get('ets', None) != None:
         content.append([
             Paragraph("Early Time Shipping", bold_style ),
