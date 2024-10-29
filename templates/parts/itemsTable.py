@@ -22,8 +22,8 @@ def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
                 Paragraph(f"{item['description']}", styles['Normal']),
                 Paragraph(f"{item['quantity']}", styles['Normal']),
                 Paragraph(f"{item['unitType']}", styles['Normal']),
-                Paragraph(format_currency( f"{item['unitPrice']:.2f}", currency ), right_align_style),
-                Paragraph(format_currency( f"{total:.2f}", currency ), right_align_style)
+                Paragraph(format_currency( f"{item['unitPrice']}", currency, '#,##0.00 \xa4' ), right_align_style),
+                Paragraph(format_currency( f"{total}", currency, '#,##0.00 \xa4' ), right_align_style)
             ])
 
     total = sum([item['quantity'] * item['unitPrice'] for item in items]) if items is not None else 0
