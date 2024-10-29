@@ -16,7 +16,7 @@ def layout():
         "left": 40,
         "right": 40,
         "top": 60,
-        "bottom": 30
+        "bottom": 20
     }
     return margins
 
@@ -60,7 +60,7 @@ class PageNumCanvas(canvas.Canvas):
         """
         page = "Page %s of %s" % (self._pageNumber, page_count)
         self.setFont("Helvetica", 9)
-        self.drawRightString(205*mm, 10*mm, page)
+        self.drawRightString(205*mm, 5*mm, page)
 
     def draw_logo(self):
         """
