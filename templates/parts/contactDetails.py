@@ -73,8 +73,13 @@ def get_coordinates(contact: dict) -> str:
             get_value("zip", contact)
         ])
     ))
-    infos.append(get_value("email", contact))
-    infos.append(get_value("phone", contact))
+    email = get_value("email", contact)
+    phone = get_value("phone", contact)
+    if email is not None:
+        infos.append(email)
+    if phone is not None:
+        infos.append(phone)
+
 
     if infos is None:
         return ''
