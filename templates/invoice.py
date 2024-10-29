@@ -49,7 +49,6 @@ def generate_invoice(buffer, data):
     shipping = draw_shipping_details(data.get("shipping", None))
     paymentTerms = draw_payment_terms(data.get("paymentTerms", None))
     elements.append(draw_independent_columns([shipping, paymentTerms], innerVerticalColumns=True ))
-    elements.append(Spacer(400, 20))
 
     # Cargo Values and Bank Account Details
     cargoValues = draw_simple_table(data.get("cargoValues", None), [A4[0] / 5, A4[0] / 5 ], bold_cols=[0])
