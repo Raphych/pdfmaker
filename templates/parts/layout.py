@@ -15,8 +15,8 @@ def layout():
     margins = {
         "left": 40,
         "right": 40,
-        "top": 70,
-        "bottom": 40
+        "top": 60,
+        "bottom": 30
     }
     return margins
 
