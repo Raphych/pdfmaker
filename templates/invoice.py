@@ -27,6 +27,7 @@ def generate_invoice(buffer, data):
     )
 
     elements = []
+    print(data.get("coordinates", None))
 
     # Bill To and Ship To
     currency = data.get("paymentTerms", {}).get("currency", "USD")
