@@ -2,7 +2,7 @@ from reportlab.platypus import Table, TableStyle, Paragraph
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-import datetime
+import datetime 
 
 def draw_shipping_details(shipping):
     content = []
@@ -31,13 +31,13 @@ def draw_shipping_details(shipping):
 
     if shipping.get('ets', None) != None:
         content.append([
-            Paragraph("Estimated Time Shipping", bold_style ),
+            Paragraph("ETS", bold_style ),
             Paragraph(datetime.datetime.fromisoformat(shipping['ets'][:-1]).strftime('%Y-%m-%d'), styles['Normal'] )
         ])
     
     if shipping.get('eta', None) != None:
         content.append([
-            Paragraph("Estimated Time Arrival", bold_style ),
+            Paragraph("ETA", bold_style ),
             Paragraph(datetime.datetime.fromisoformat(shipping['eta'][:-1]).strftime('%Y-%m-%d'), styles['Normal'] )
         ])
     

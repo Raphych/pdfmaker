@@ -1,13 +1,12 @@
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from templates.parts.itemsTable import draw_items_table
 from templates.parts.contactDetails import draw_contact_details
 from templates.parts.paymentTerms import draw_payment_terms
-from reportlab.lib import colors
-from templates.parts.layout import draw_simple_table
-
-from templates.parts.layout import layout, PageNumCanvas, draw_independent_columns
+from templates.parts.layout import draw_simple_table, layout, PageNumCanvas, draw_independent_columns
+import datetime
 
 styles = getSampleStyleSheet()
 bold_style = ParagraphStyle(name='Bold', parent=styles['Normal'], fontName='Helvetica-Bold')
@@ -55,6 +54,9 @@ def generate_order(buffer, data):
     if (data.get('portOfDischarge', None) is not None):
         additional_infos.append(["Port of Discharge", data['portOfDischarge']])
     
+    if (data.get('deliveryDate', None) is not None):
+        additional_infos.append(["Delivery Date", datetime.datetime.fromisoformat(data['deliveryDate'][:-1]).strftime('%Y-%m-%d')])
+
     if len(additional_infos) == 0:
         additional_infos.append([''])
 
