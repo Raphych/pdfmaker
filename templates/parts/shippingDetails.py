@@ -31,13 +31,13 @@ def draw_shipping_details(shipping):
 
     if shipping.get('ets', None) != None:
         content.append([
-            Paragraph("Early Time Shipping", bold_style ),
+            Paragraph("Estimated Time Shipping", bold_style ),
             Paragraph(datetime.datetime.fromisoformat(shipping['ets'][:-1]).strftime('%Y-%m-%d'), styles['Normal'] )
         ])
     
     if shipping.get('eta', None) != None:
         content.append([
-            Paragraph("Early Time Arrival", bold_style ),
+            Paragraph("Estimated Time Arrival", bold_style ),
             Paragraph(datetime.datetime.fromisoformat(shipping['eta'][:-1]).strftime('%Y-%m-%d'), styles['Normal'] )
         ])
     
