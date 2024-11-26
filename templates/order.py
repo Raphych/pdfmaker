@@ -34,9 +34,9 @@ def generate_order(buffer, data):
     elements.append(Spacer(400, 20))
 
     # Bill To and Ship To
-    billTo = draw_contact_details(data.get("billTo", None), "Bill To")
+    vendor = draw_contact_details(data.get("vendor", None), "Vendor")
     shipTo = draw_contact_details(data.get("shipTo", None), "Ship To")
-    elements.append(draw_independent_columns([billTo, shipTo]))
+    elements.append(draw_independent_columns([vendor, shipTo]))
     elements.append(Spacer(400, 20))
 
     # Items Table
