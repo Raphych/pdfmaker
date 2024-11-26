@@ -55,7 +55,7 @@ def generate_order(buffer, data):
         additional_infos.append(["Port of Discharge", data['portOfDischarge']])
     
     if (data.get('deliveryDate', None) is not None):
-        additional_infos.append(["Delivery Date", datetime.datetime.fromisoformat(data['deliveryDate'][:-1]).strftime('%Y-%m-%d')])
+        additional_infos.append(["Delivery Date", data['deliveryDate'][:-1]])
 
     if len(additional_infos) == 0:
         additional_infos.append([''])
