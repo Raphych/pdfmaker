@@ -15,7 +15,8 @@ bold_style = ParagraphStyle(name='Bold', parent=styles['Normal'], fontName='Helv
 
 def generate_invoice(buffer, data):
     margins = layout()
-    title="INVOICE"
+    title = data.get("filename", "invoice.pdf")
+    header="INVOICE"
 
     pdf = SimpleDocTemplate(
         buffer,
@@ -24,6 +25,7 @@ def generate_invoice(buffer, data):
         leftMargin=margins['left'],
         topMargin=margins['top'],
         bottomMargin=margins['bottom'],
+        title=title
     )
 
     elements = []
@@ -57,7 +59,7 @@ def generate_invoice(buffer, data):
     elements.append(draw_independent_columns([cargoValues, bankDetails], innerVerticalColumns=True ))
 
     # Build the PDF
-    pdf.build(elements, canvasmaker=lambda *args, **kwargs: PageNumCanvas(*args, title=title, **kwargs))
+    pdf.build(elements, canvasmaker=lambda *args, **kwargs: PageNumCanvas(*args, title=title, header=header, **kwargs))
 
 
 def draw_title(title):

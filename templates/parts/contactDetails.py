@@ -75,11 +75,14 @@ def get_coordinates(contact: dict) -> str:
     ))
     email = get_value("email", contact)
     phone = get_value("phone", contact)
+    others = get_value("others", contact)
     if email is not None:
         infos.append(email)
     if phone is not None:
         infos.append(phone)
-
+    if others is not None:
+        for other in others:
+            infos.append(other)
 
     if infos is None:
         return ''

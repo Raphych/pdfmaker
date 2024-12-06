@@ -26,6 +26,7 @@ class PageNumCanvas(canvas.Canvas):
     def __init__(self, *args, **kwargs):
         """Constructor"""
         self.title = kwargs.pop('title', 'Untitled')
+        self.header= kwargs.pop('header', 'Document')
         super().__init__(*args, **kwargs)
         self.pages = []
         
@@ -48,7 +49,7 @@ class PageNumCanvas(canvas.Canvas):
             self.__dict__.update(page)
             self.draw_page_number(page_count)
             self.draw_logo()
-            self.draw_file_name(self.title)
+            self.draw_file_name(self.header)
             super().showPage()
 
         canvas.Canvas.save(self)

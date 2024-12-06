@@ -13,7 +13,8 @@ bold_style = ParagraphStyle(name='Bold', parent=styles['Normal'], fontName='Helv
 
 def generate_order(buffer, data):
     margins = layout()
-    title="PURCHASE ORDER"
+    title = data.get("filename", "order.pdf")
+    header="PURCHASE ORDER"
 
     pdf = SimpleDocTemplate(
         buffer,
@@ -22,6 +23,7 @@ def generate_order(buffer, data):
         leftMargin=margins['left'],
         topMargin=margins['top'],
         bottomMargin=margins['bottom'],
+        title=title
     )
 
     elements = []
@@ -65,7 +67,7 @@ def generate_order(buffer, data):
     elements.append(draw_independent_columns([shipping, paymentTerms], innerVerticalColumns=True ))
 
     # Build the PDF
-    pdf.build(elements, canvasmaker=lambda *args, **kwargs: PageNumCanvas(*args, title=title, **kwargs))
+    pdf.build(elements, canvasmaker=lambda *args, **kwargs: PageNumCanvas(*args, title=title, header=header, **kwargs))
 
 
 def draw_title(title):
