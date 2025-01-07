@@ -47,7 +47,7 @@ def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
     if taxes is not None:
         for tax in taxes:
             label = f"{tax['label']}"
-            percentage = f"{tax['percentage']}%"
+            percentage = f"({str(round(tax['percentage'] * 100, 2)).rstrip('.0')}%)"
             summedTotal = tax['percentage'] * total
             data.append(['', '', '', '', Paragraph(f"{label} {percentage}", bold_style), '', format_currency(f"{summedTotal}", currency, '#,##0.00 \xa4')])
             grandTotal += summedTotal
