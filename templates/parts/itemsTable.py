@@ -15,7 +15,7 @@ def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
 
     if items is not None:
         for index, item in enumerate(items):
-            total = item['quantity'] * item['unitPrice']
+            total = round(item['quantity'] * item['unitPrice'], 2)
             data.append([
                 Paragraph(f"{index+1}", styles['Normal']),
                 Paragraph(f"{item['product']}", styles['Normal']),
@@ -26,7 +26,7 @@ def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
                 Paragraph(format_currency( f"{total}", currency, '#,##0.00 \xa4' ), right_align_style)
             ])
 
-    total = sum([item['quantity'] * item['unitPrice'] for item in items]) if items is not None else 0
+    total = sum([round(item['quantity'] * item['unitPrice'], 2) for item in items]) if items is not None else 0
     totalQty = sum(item['quantity'] for item in items)
 
     # Append discount rows (each discount on a separate line)
