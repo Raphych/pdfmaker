@@ -18,7 +18,7 @@ def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
 
     if items is not None:
         for index, item in enumerate(items):
-            itemTotal = Decimal(item['quantity']) * Decimal(item['unitPrice']).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            itemTotal = (Decimal(item['quantity']) * Decimal(item['unitPrice'])).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
             total += itemTotal
             data.append([
                 Paragraph(f"{index+1}", styles['Normal']),
