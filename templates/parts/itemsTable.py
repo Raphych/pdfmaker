@@ -4,6 +4,7 @@ from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from babel.numbers import format_currency
+from decimal import Decimal, ROUND_HALF_UP
 
 def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
     data = [['#', 'Product', 'Description', 'Qty', 'Unit', 'Price', 'Total']]
@@ -13,9 +14,12 @@ def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
     bold_style = ParagraphStyle(name='Bold', parent=styles['Normal'], fontName='Helvetica-Bold')
     bold_right_align_style = ParagraphStyle(name='BoldRightAlign', parent=bold_style, alignment=2)
 
+    total = 0
+
     if items is not None:
         for index, item in enumerate(items):
-            total = round(item['quantity'] * item['unitPrice'], 2)
+            itemTotal = Decimal(item['quantity']) * Decimal(item['unitPrice']).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            total += itemTotal
             data.append([
                 Paragraph(f"{index+1}", styles['Normal']),
                 Paragraph(f"{item['product']}", styles['Normal']),
@@ -23,10 +27,10 @@ def draw_items_table(items=None, discounts=None, taxes=None, currency='USD'):
                 Paragraph(f"{item['quantity']}", styles['Normal']),
                 Paragraph(f"{item['unitType']}", styles['Normal']),
                 Paragraph(format_currency( f"{item['unitPrice']}", currency, '#,##0.00 \xa4' ), right_align_style),
-                Paragraph(format_currency( f"{total}", currency, '#,##0.00 \xa4' ), right_align_style)
+                Paragraph(format_currency( f"{itemTotal}", currency, '#,##0.00 \xa4' ), right_align_style)
             ])
 
-    total = sum([round(item['quantity'] * item['unitPrice'], 2) for item in items]) if items is not None else 0
+    total = Decimal(total).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
     totalQty = sum(item['quantity'] for item in items)
 
     # Append discount rows (each discount on a separate line)
