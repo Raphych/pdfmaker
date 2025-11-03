@@ -6,7 +6,7 @@ from reportlab.lib.pagesizes import A4
 def draw_contact_details(contact: dict, label = None, colWidths=None):
     content = []
 
-    if contact is None or contact.get('company', None) is None:
+    if contact is None or contact.get('name', None) is None:
         return Table([['']], colWidths=[1])
 
     if (colWidths == None):
@@ -28,14 +28,15 @@ def draw_contact_details(contact: dict, label = None, colWidths=None):
         content.append([Paragraph(label, bold_style)])
 
     # Format the label and return the rendered paragraph
-    tax_id_string = get_tax_id(contact.get('taxId', None))
-    if contact['company'] != None:
+    if contact['name'] != None:
         content.append([
             Paragraph(
-                f"{contact.get('company', '')} {tax_id_string}",
+                f"{contact.get('name', '')}",
                 bold_style if label is None else normal_style
             )
         ])
+    if contact.get('taxId', None) != None:
+        content.append([Paragraph(f"{contact['taxId']}", normal_style)])
 
     coordinates = get_coordinates(contact)
     for el in coordinates:
@@ -87,16 +88,3 @@ def get_coordinates(contact: dict) -> str:
     if infos is None:
         return ''
     return infos if infos != None else ''
-
-
-def get_tax_id(tax_id: dict) -> str:
-    if not isinstance(tax_id, dict):
-        return ''
-    
-    label = tax_id.get('label', 'Tax')
-    value = tax_id.get('value', None)
-
-    if value is None:
-        return ''
-    else:
-        return f"({label}: {value})"

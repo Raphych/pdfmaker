@@ -9,10 +9,10 @@ def draw_payment_terms(payment_terms):
     styles = getSampleStyleSheet()
     bold_style = ParagraphStyle(name='Bold', parent=styles['Normal'], fontName='Helvetica-Bold')
 
-    if payment_terms.get('definition', None) != None:
+    if payment_terms.get('code.definition', None) != None:
         content.append([
             Paragraph("Payment Terms", bold_style ),
-            Paragraph(payment_terms['definition'], styles['Normal'] )
+            Paragraph(payment_terms['code.definition'], styles['Normal'] )
         ])
 
     if payment_terms.get('currency', None) != None:

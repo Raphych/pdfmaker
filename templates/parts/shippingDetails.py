@@ -11,22 +11,22 @@ def draw_shipping_details(shipping):
     bold_style = ParagraphStyle(name='Bold', parent=styles['Normal'], fontName='Helvetica-Bold')
 
     
-    if shipping.get('bkgNumber', None) != None:
+    if shipping.get('bookingNumber', None) != None:
         content.append([
             Paragraph("Booking #", bold_style ),
-            Paragraph(shipping['bkgNumber'], styles['Normal'] )
+            Paragraph(shipping['bookingNumber'], styles['Normal'] )
         ])
     
-    if shipping.get('blNumber', None) != None:
+    if shipping.get('billOfLadingNumber', None) != None:
         content.append([
             Paragraph("Bill of Lading #", bold_style ),
-            Paragraph(shipping['blNumber'], styles['Normal'] )
+            Paragraph(shipping['billOfLadingNumber'], styles['Normal'] )
         ])
 
-    if shipping.get('blRelease', None) != None:
+    if shipping.get('billOfLadingType', None) != None:
         content.append([
             Paragraph("Bill of Lading Type", bold_style ),
-            Paragraph(shipping['blRelease'], styles['Normal'] )
+            Paragraph(shipping['billOfLadingType'], styles['Normal'] )
         ])
 
     if shipping.get('ets', None) != None:
@@ -41,10 +41,10 @@ def draw_shipping_details(shipping):
             Paragraph(datetime.datetime.fromisoformat(shipping['eta'][:-1]).strftime('%Y-%m-%d'), styles['Normal'] )
         ])
     
-    if shipping.get('portOfOrigin', None) != None:
+    if shipping.get('portOfLoading', None) != None:
         content.append([
-            Paragraph("Port of Origin", bold_style ),
-            Paragraph(shipping['portOfOrigin'], styles['Normal'] )
+            Paragraph("Port of Loading", bold_style ),
+            Paragraph(shipping['portOfLoading'], styles['Normal'] )
         ])
     
     if shipping.get('portOfDischarge', None) != None:
@@ -70,14 +70,6 @@ def draw_shipping_details(shipping):
             Paragraph("Vessel", bold_style ),
             Paragraph(f"{shipping['vessel']} {shipping.get('voyageNumber', '')}", styles['Normal'] )
         ])
-    
-    if shipping.get('others', None) != None:
-        content.append(['',''])
-        for other in shipping['others']:
-            content.append([
-                Paragraph(other, styles['Normal']),
-                ''
-            ])
 
     if len(content) == 0:
         content.append([''])
@@ -91,11 +83,6 @@ def draw_shipping_details(shipping):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 0),  # Remove bottom padding
         ('LINEBELOW', (0, 0), (-1, -1), 0, colors.transparent)  # No borders
     ])
-
-    if shipping.get('others', None) != None:
-        for i in range(1, len(shipping['others']) + 1):
-            style.add("SPAN", (0, -i ), (-1, -i) )
-            style.add("FONTNAME", (0, -i ), (-1, -i), "Helvetica")
         
     table.setStyle(style)
     return table
