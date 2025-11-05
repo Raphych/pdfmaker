@@ -2,12 +2,12 @@ from reportlab.platypus import Table, TableStyle, Paragraph
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from babel.numbers import format_currency
+from babel.numbers import format_currency, format_decimal
 from decimal import Decimal, ROUND_HALF_UP
 
 
 def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTotal=None, discountTotal=None,  grandTotal=None, currency='USD'):
-    data = [['Description', 'Qty', 'Unit', 'Price', 'Total']]
+    data = [['DESCRIPTION', 'QTY', 'UOM', 'PRICE', 'TOTAL']]
 
     styles = getSampleStyleSheet()
     right_align_style = ParagraphStyle(name='RightAlign', parent=styles['Normal'], alignment=2)
@@ -19,24 +19,32 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
     if items is not None:
         for item in items:
             itemTotal = (Decimal(item['quantity']) * Decimal(item['unitPrice'])).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-            data.append([
-                Paragraph(f"{item['description']}", styles['Normal']),
-                Paragraph(f"{item['quantity']}", styles['Normal']),
-                Paragraph(f"{item['uom']}", styles['Normal']),
-                Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤'), right_align_style),
-                Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤'), right_align_style),
-            ])
+            if 'product' not in item:
+                data.append([
+                    Paragraph(f"{(item['description']).upper()}", styles['Normal']),
+                    Paragraph(f"{item['quantity']}", styles['Normal']),
+                    Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤'), right_align_style),
+                    Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤'), right_align_style),
+                ])
+            else:
+                data.append([
+                    Paragraph(f"{(item['product']['name']).upper()} {item['product']['hsCode']}<br />{item['description']}", styles['Normal']),
+                    Paragraph(f"{item['quantity']}", styles['Normal']),
+                    Paragraph(f"{item['uom']}", styles['Normal']),
+                    Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤'), right_align_style),
+                    Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤'), right_align_style),
+                ])
 
 
     # --- Add total quantity line before discounts/taxes ---
     data.append([
-        Paragraph(f"Total Weight", bold_left_align_style),
-        Paragraph(f"{totalQty:.3f}", bold_left_align_style), '', '', ''
+        Paragraph(f"TOTAL WEIGHT: {format_decimal(totalQty, '#,##0.000')}", bold_right_align_style),
+        '', '', '', ''
     ])
 
     # --- Subtotal if taxes or discount exist ---
-    if tax and len(tax) > 0:
-        data.append(['', '', Paragraph('Subtotal', bold_style), '', format_currency(f"{subTotal}", currency, '#,##0.00 ¤')])
+    if tax and len(tax) > 0 or discount is not None:
+        data.append(['', '', Paragraph('SUBTOTAL', bold_style), '', Paragraph(format_currency(f"{subTotal}", currency, '#,##0.## ¤'), bold_right_align_style)])
 
 
     # --- Discounts ---
@@ -45,9 +53,9 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
         discount_count = 1
         operator = discount.get('operator', None)
         if operator == 'fixed':
-            discount_label = f"Discount {format_currency(discount['amount'], currency, '#,##0.00 ¤')}"
+            discount_label = f"Discount {format_currency(discount['amount'], currency, '#,##0.## ¤')}"
         elif operator == 'unit':
-            discount_label = f"Discount {str(round(discount['amount'], 2)).rstrip('.0')} per unit"
+            discount_label = f"Discount {format_currency(discount['amount'], currency, '#,##0.## ¤')} /unit"
         else:  # percentage
             discount_label = f"Discount {str(round(discount['amount'] * 100, 2)).rstrip('.0')}%"
 
@@ -82,7 +90,7 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
 
     # --- Grand Total ---
     data.append([
-        '', '', Paragraph('Total', bold_style),
+        '', '', Paragraph('TOTAL', bold_style),
         '', Paragraph(format_currency(f"{grandTotal}", currency, '#,##0.00 ¤'), bold_right_align_style)
     ])
 
@@ -92,6 +100,8 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
     total_rows_count += discount_count
     if isinstance(tax, list) and len(tax) > 0:
         total_rows_count += len(tax) + 1  # subtotal + each tax
+    if discount is not None or (isinstance(tax, list) and len(tax) > 0):
+        total_rows_count += 1  # subtotal row
 
     table = Table(
         data,
@@ -105,29 +115,34 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('ALIGN', (-2, 0), (-1, -1), 'RIGHT'),
+
         ('BOTTOMPADDING', (0, 0), (-1, 0), 8), # Header padding
         ('TOPPADDING', (0, 0), (-1, 0), 8), # Header padding
-        ('LEFTPADDING', (0, 0), (-1, 0), 8), # Header padding
-        ('RIGHTPADDING', (0, 0), (-1, 0), 8), # Header padding
-        ('BOTTOMPADDING', (1, 1), (-1, -1), 6), # Items rows padding
-        ('TOPPADDING', (1, 1), (-1, -1), 6), # Items rows padding
-        ('LEFTPADDING', (0, 1), (-1, -1), 8), # Items rows padding
-        ('RIGHTPADDING', (0, 1), (-1, -1), 8), # Items rows padding
+        ('LEFTPADDING', (0, 0), (-1, -1), 8), # Header padding
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8), # Header padding
+
+        ('BOTTOMPADDING', (0, 1), (-1, items_count+1), 5), # Items rows padding
+        ('TOPPADDING', (0, 1), (-1, items_count+1), 5), # Items rows padding
+        ('SPAN', (0, items_count + 1), (1, items_count + 1)) ,  # Span Total Weight row
+        # ('ALIGN', (0, items_count + 1), (2, items_count + 1), 'RIGHT'),  # Align Total Weight right
 
         # Grid for items rows only
-        ('GRID', (0, 0), (-1, items_count), 0.1, colors.black),
+        # ('GRID', (0, 0), (-1, items_count), 0.1, colors.black),
+        ('BOX', (0, 0), (-1, items_count + 1), 0.8, colors.black),
 
         # Bold text for totals area
         ('FONTNAME', (2, items_count + 1), (-1, -1), 'Helvetica-Bold'),
     ])
 
     # --- Outer border for Total Weight row only (no internal grid) ---
-    style.add('BOX', (0, items_count + 1), (-1, items_count + 1), 0.8, colors.black)
+    # style.add('BOX', (0, items_count + 1), (-1, items_count + 1), 0.8, colors.black)
 
     # --- Grids for the totals area below Total Weight ---
     style.add('GRID', (2, items_count + 2), (-1, -1), 0.4, colors.black)
     style.add('BOX', (2, items_count + 2), (-1, -1), 1.2, colors.black)
+    style.add('LINEABOVE', (0, items_count + 2), (-1, items_count + 2), 1.2, colors.black)
+    style.add('BOTTOMPADDING', (0, items_count + 2), (-1, -1), 8 )
+    style.add('TOPPADDING', (0, items_count + 2), (-1, -1), 8)
 
     # Merge cells for total-related rows (subtotal, taxes, total)
     for i in range(1, total_rows_count + 1):

@@ -4,12 +4,10 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from templates.parts.itemsTable import draw_items_table
 from templates.parts.shippingDetails import draw_shipping_details
 from templates.parts.contactDetails import draw_contact_details
-from templates.parts.paymentTerms import draw_payment_terms
 from templates.parts.layout import draw_simple_table
 from reportlab.lib import colors
-import datetime
 from babel.numbers import format_currency
-
+import datetime
 from templates.parts.layout import layout, PageNumCanvas, draw_independent_columns
 
 styles = getSampleStyleSheet()
@@ -76,7 +74,10 @@ def generate_invoice(buffer, data):
 
     # Bank Account Details in small font at the bottom
     elements.append(Spacer(400, 20))
-    bankDetails = Paragraph(data.get("bankDetails", None), ParagraphStyle(name='Small', parent=styles['Normal'], fontSize=8))
+
+    bank_text = (data.get("bankDetails") or "").replace("---", "<br/>")
+
+    bankDetails = Paragraph(bank_text, ParagraphStyle(name='Small', parent=styles['Normal'], fontSize=8))
     elements.append(bankDetails)    
 
     # Build the PDF

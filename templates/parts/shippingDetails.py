@@ -11,65 +11,73 @@ def draw_shipping_details(shipping):
     bold_style = ParagraphStyle(name='Bold', parent=styles['Normal'], fontName='Helvetica-Bold')
 
     
-    if shipping.get('bookingNumber', None) != None:
-        content.append([
-            Paragraph("Booking #", bold_style ),
-            Paragraph(shipping['bookingNumber'], styles['Normal'] )
-        ])
-    
-    if shipping.get('billOfLadingNumber', None) != None:
-        content.append([
-            Paragraph("Bill of Lading #", bold_style ),
-            Paragraph(shipping['billOfLadingNumber'], styles['Normal'] )
-        ])
+# if shipping.get('bookingNumber', None) != None:
+    content.append([
+        Paragraph("Booking #", bold_style ),
+        Paragraph(shipping.get('bookingNumber', ''), styles['Normal'] )
+    ])
 
-    if shipping.get('billOfLadingType', None) != None:
-        content.append([
-            Paragraph("Bill of Lading Type", bold_style ),
-            Paragraph(shipping['billOfLadingType'], styles['Normal'] )
-        ])
+# if shipping.get('billOfLadingNumber', None) != None:
+    content.append([
+        Paragraph("Bill of Lading #", bold_style ),
+        Paragraph(shipping.get('billOfLadingNumber', ''), styles['Normal'] )
+    ])
 
-    if shipping.get('ets', None) != None:
-        content.append([
-            Paragraph("ETS", bold_style ),
-            Paragraph(datetime.datetime.fromisoformat(shipping['ets'][:-1]).strftime('%Y-%m-%d'), styles['Normal'] )
-        ])
-    
-    if shipping.get('eta', None) != None:
-        content.append([
-            Paragraph("ETA", bold_style ),
-            Paragraph(datetime.datetime.fromisoformat(shipping['eta'][:-1]).strftime('%Y-%m-%d'), styles['Normal'] )
-        ])
-    
-    if shipping.get('portOfLoading', None) != None:
-        content.append([
-            Paragraph("Port of Loading", bold_style ),
-            Paragraph(shipping['portOfLoading'], styles['Normal'] )
-        ])
-    
-    if shipping.get('portOfDischarge', None) != None:
-        content.append([
-            Paragraph("Port of Discharge", bold_style ),
-            Paragraph(shipping['portOfDischarge'], styles['Normal'] )
-        ])
-    
-    if shipping.get('finalDestination', None) != None:
-        content.append([
-            Paragraph("Final Destination", bold_style ),
-            Paragraph(shipping['finalDestination'], styles['Normal'] )
-        ])
-    
-    if shipping.get('carrier', None) != None:
-        content.append([
-            Paragraph("Carrier", bold_style ),
-            Paragraph(shipping['carrier'], styles['Normal'] )
-        ])
-    
-    if shipping.get('vessel', None) != None:
-        content.append([
-            Paragraph("Vessel", bold_style ),
-            Paragraph(f"{shipping['vessel']} {shipping.get('voyageNumber', '')}", styles['Normal'] )
-        ])
+# if shipping.get('billOfLadingType', None) != None:
+#     content.append([
+#         Paragraph("Bill of Lading Type", bold_style ),
+#         Paragraph(shipping['billOfLadingType'], styles['Normal'] )
+#     ])
+
+# if shipping.get('ets', None) != None:
+    ets_text = (
+        datetime.datetime.fromisoformat(shipping.get('ets', '')[:-1]).strftime('%Y-%m-%d')
+        if shipping.get('ets') else ''
+    )
+    content.append([
+        Paragraph("ETS", bold_style ),
+        Paragraph(ets_text, styles['Normal'] )
+    ])
+
+# if shipping.get('eta', None) != None:
+    eta_text = (
+        datetime.datetime.fromisoformat(shipping.get('eta', '')[:-1]).strftime('%Y-%m-%d')
+        if shipping.get('eta') else ''
+    )
+    content.append([
+        Paragraph("ETA", bold_style ),
+        Paragraph(eta_text, styles['Normal'] )
+    ])
+
+# if shipping.get('portOfLoading', None) != None:
+    content.append([
+        Paragraph("Port of Loading", bold_style ),
+        Paragraph(shipping.get('portOfLoading', ''), styles['Normal'] )
+    ])
+
+# if shipping.get('portOfDischarge', None) != None:
+    content.append([
+        Paragraph("Port of Discharge", bold_style ),
+        Paragraph(shipping.get('portOfDischarge', ''), styles['Normal'] )
+    ])
+
+# if shipping.get('finalDestination', None) != None:
+    content.append([
+        Paragraph("Final Destination", bold_style ),
+        Paragraph(shipping.get('finalDestination', ''), styles['Normal'] )
+    ])
+
+# if shipping.get('carrier', None) != None:
+    content.append([
+        Paragraph("Carrier", bold_style ),
+        Paragraph(shipping.get('carrier', ''), styles['Normal'] )
+    ])
+
+# if shipping.get('vessel', None) != None:
+    content.append([
+        Paragraph("Vessel", bold_style ),
+        Paragraph(f"{shipping.get('vessel', '')} {shipping.get('voyageNumber', '')}", styles['Normal'] )
+    ])
 
     if len(content) == 0:
         content.append([''])
