@@ -19,21 +19,13 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
     if items is not None:
         for item in items:
             itemTotal = (Decimal(item['quantity']) * Decimal(item['unitPrice'])).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-            if 'product' not in item:
-                data.append([
-                    Paragraph(f"{(item['description']).upper()}", styles['Normal']),
-                    Paragraph(f"{item['quantity']}", styles['Normal']),
-                    Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤'), right_align_style),
-                    Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤'), right_align_style),
-                ])
-            else:
-                data.append([
-                    Paragraph(f"{(item['product']['name']).upper()} {item['product']['hsCode']}<br />{item['description']}", styles['Normal']),
-                    Paragraph(f"{item['quantity']}", styles['Normal']),
-                    Paragraph(f"{item['uom']}", styles['Normal']),
-                    Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤'), right_align_style),
-                    Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤'), right_align_style),
-                ])
+            data.append([
+                Paragraph(f"{(item['product']['name']).upper()} {item['product']['hsCode']}<br />{item['description']}", styles['Normal']),
+                Paragraph(f"{item['quantity']}", styles['Normal']),
+                Paragraph(f"{item['uom']}", styles['Normal']),
+                Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤'), right_align_style),
+                Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤'), right_align_style),
+            ])
 
 
     # --- Add total quantity line before discounts/taxes ---

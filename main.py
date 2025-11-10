@@ -69,7 +69,8 @@ def generate_credit_note():
     pdf_buffer = io.BytesIO()
     
     try:
-        pdf_buffer = creditnote.generate_credit_note(buffer=pdf_buffer, data=data)
+        creditnote.generate_credit_note(buffer=pdf_buffer, data=data)
+        pdf_buffer.seek(0)
         return send_file(
             pdf_buffer,
             download_name=data.get("filename", 'creditnote.pdf'),
