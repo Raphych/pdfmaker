@@ -20,7 +20,7 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
         for item in items:
             itemTotal = (Decimal(item['quantity']) * Decimal(item['unitPrice'])).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
             data.append([
-                Paragraph(f"{(item['product']['name']).upper()} {item['product']['hsCode']}<br />{item['description']}", styles['Normal']),
+                Paragraph(f"{(item['product']['name']).upper()}<br />{item['description']}", styles['Normal']),
                 Paragraph(f"{item['quantity']}", styles['Normal']),
                 Paragraph(f"{item['uom']}", styles['Normal']),
                 Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤'), right_align_style),
@@ -119,7 +119,7 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
         # ('ALIGN', (0, items_count + 1), (2, items_count + 1), 'RIGHT'),  # Align Total Weight right
 
         # Grid for items rows only
-        # ('GRID', (0, 0), (-1, items_count), 0.1, colors.black),
+        ('GRID', (0, 0), (-1, items_count), 0.1, colors.black),
         ('BOX', (0, 0), (-1, items_count + 1), 0.8, colors.black),
 
         # Bold text for totals area

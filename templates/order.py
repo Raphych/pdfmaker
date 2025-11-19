@@ -46,7 +46,9 @@ def generate_order(buffer, data):
     elements.append(Spacer(400, 20))
 
     # Insert line break after title
-    terms_text = f"<b>Terms and Conditions</b><br/>{data.get('termsAndConditions', 'N/A')}"
+    raw_terms = data.get("termsAndConditions", "") or ""
+    html_terms = raw_terms.replace("\n", "<br/>")
+    terms_text = f"<b>Terms and Conditions</b><br/>{html_terms}"
     terms_paragraph = Paragraph(terms_text, styles['Normal'])
 
     left_rows = []

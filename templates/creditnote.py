@@ -50,7 +50,9 @@ def generate_credit_note(buffer, data):
     elements.append(Spacer(400, 20))
 
     # Insert line break after title
-    terms_text = f"<b>Terms and Conditions</b><br/>{data.get('termsAndConditions', '')}"
+    raw_terms = data.get("termsAndConditions", "") or ""
+    html_terms = raw_terms.replace("\n", "<br/>")
+    terms_text = f"<b>Terms and Conditions</b><br/>{html_terms}"
     terms_paragraph = Paragraph(terms_text, styles['Normal'])
 
     left_rows = []

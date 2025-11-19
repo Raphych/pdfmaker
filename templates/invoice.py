@@ -65,7 +65,9 @@ def generate_invoice(buffer, data):
     cargoValues = draw_simple_table(cargoValuesData, [A4[0] / 5, A4[0] / 5 ], bold_cols=[0])
 
     # Insert line break after title
-    terms_text = f"<b>Terms and Conditions</b><br/>{data.get('termsAndConditions', '')}"
+    raw_terms = data.get("termsAndConditions", "") or ""
+    html_terms = raw_terms.replace("\n", "<br/>")
+    terms_text = f"<b>Terms and Conditions</b><br/>{html_terms}"
     terms_paragraph = Paragraph(terms_text, styles['Normal'])
 
     left_section = [ shipping, Spacer(0, 12), cargoValues ]

@@ -29,6 +29,19 @@ def draw_shipping_details(shipping):
 #         Paragraph(shipping['billOfLadingType'], styles['Normal'] )
 #     ])
 
+
+# if shipping.get('carrier', None) != None:
+    content.append([
+        Paragraph("Carrier", bold_style ),
+        Paragraph(shipping.get('carrier', ''), styles['Normal'] )
+    ])
+
+# if shipping.get('vessel', None) != None:
+    content.append([
+        Paragraph("Vessel", bold_style ),
+        Paragraph(f"{shipping.get('vessel', '')} {shipping.get('voyageNumber', '')}", styles['Normal'] )
+    ])
+
 # if shipping.get('ets', None) != None:
     ets_text = (
         datetime.datetime.fromisoformat(shipping.get('ets', '')[:-1]).strftime('%Y-%m-%d')
@@ -67,17 +80,6 @@ def draw_shipping_details(shipping):
         Paragraph(shipping.get('finalDestination', ''), styles['Normal'] )
     ])
 
-# if shipping.get('carrier', None) != None:
-    content.append([
-        Paragraph("Carrier", bold_style ),
-        Paragraph(shipping.get('carrier', ''), styles['Normal'] )
-    ])
-
-# if shipping.get('vessel', None) != None:
-    content.append([
-        Paragraph("Vessel", bold_style ),
-        Paragraph(f"{shipping.get('vessel', '')} {shipping.get('voyageNumber', '')}", styles['Normal'] )
-    ])
 
     if len(content) == 0:
         content.append([''])
