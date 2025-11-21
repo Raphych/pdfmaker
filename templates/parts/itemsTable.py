@@ -43,13 +43,6 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
     discount_count = 0
     if discount is not None:
         discount_count = 1
-        operator = discount.get('operator', None)
-        if operator == 'fixed':
-            discount_label = f"Discount {format_currency(discount['amount'], currency, '#,##0.## ¤')}"
-        elif operator == 'unit':
-            discount_label = f"Discount {format_currency(discount['amount'], currency, '#,##0.## ¤')} /unit"
-        else:  # percentage
-            discount_label = f"Discount {str(round(discount['amount'] * 100, 2)).rstrip('.0')}%"
 
         # Make the label green inline
         green_bold_left = ParagraphStyle(
@@ -65,7 +58,7 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
             alignment=2  # right
         )
         data.append([
-            '', '', Paragraph(discount_label, green_bold_left),
+            '', '', Paragraph("Discount (" + discount.get('description', '') + ")", green_bold_left),
             '', Paragraph(format_currency(f"{-discountTotal}", currency, '#,##0.00 ¤'), green_bold_right)
         ])
 
