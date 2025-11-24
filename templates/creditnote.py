@@ -58,16 +58,15 @@ def generate_credit_note(buffer, data):
     left_rows = []
     if data.get("relatedInvoice"):
         left_rows.append(["Related Invoice #", data.get("relatedInvoice", {}).get("invoiceNumber", "")])
-        related_invoice_date_str = data.get("relatedInvoice", {}).get('issuedDate', '')
-        if related_invoice_date_str:
-            related_invoice_date = datetime.datetime.fromisoformat(related_invoice_date_str.rstrip('Z')).strftime('%Y-%m-%d')
-        else:
-            related_invoice_date = ''
 
+        related_invoice_date_str = data.get("relatedInvoice", {}).get('issuedDate', '')
+        related_invoice_date = datetime.datetime.fromisoformat(related_invoice_date_str.rstrip('Z')).strftime('%Y-%m-%d')
         if related_invoice_date:
             left_rows.append(["Related Invoice Date", related_invoice_date])
+
         if data.get("relatedInvoice", {}).get("customerReference", None):
-            left_rows.append(["Related Invoice Customer Reference", data.get("relatedInvoice", {}).get("customerReference", "")])
+            left_rows.append(["Customer Reference", data.get("relatedInvoice", {}).get("customerReference", "")])
+            
         if data.get("relatedInvoice", {}).get("grandTotal", None) and data.get("relatedInvoice", {}).get("paymentTerms", {}).get("currency", None):
             left_rows.append(["Related Invoice Total", format_currency(data.get("relatedInvoice", {}).get("grandTotal", 0), data.get("relatedInvoice", {}).get("paymentTerms", {}).get("currency", "USD"))])
 
