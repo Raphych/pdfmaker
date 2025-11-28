@@ -54,11 +54,12 @@ def generate_proforma(buffer, data):
 
     # Cargo Values Table with formatted currency
     cargoValuesData = [
-        [f"FOB Value", f"{format_currency(data.get('subTotal', 0) - (data.get('shipping', {}).get('cost', 0) or 0) - insuredValue, currency)}"],
-        [f"Freight Value", f"{format_currency(data.get('shipping', {}).get('cost', 0) or 0, currency)}"],
-        [f"Insured Value", f"{format_currency(insuredValue, currency)}"],
-        [f"Cargo Value", f"{format_currency(data.get('subTotal', 0), currency)}"],
+        [f"FOB Value", f"{format_currency(data.get('subTotal', 0) - (data.get('shipping', {}).get('cost', 0) or 0) - insuredValue, currency, '#,##0.00 ¤')}"],
+        [f"Freight Value", f"{format_currency(data.get('shipping', {}).get('cost', 0) or 0, currency, '#,##0.00 ¤')}"],
+        [f"Insured Value", f"{format_currency(insuredValue, currency, '#,##0.00 ¤')}"],
+        [f"Cargo Value", f"{format_currency(data.get('subTotal', 0), currency, '#,##0.00 ¤')}"],
     ]
+    
     # Remove Insured Value row if it's zero
     if insuredValue == 0:
         cargoValuesData.pop(2)
