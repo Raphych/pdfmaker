@@ -68,10 +68,10 @@ def draw_shipping_details(shipping):
         Paragraph(shipping.get('portOfLoading', ''), styles['Normal'] )
     ])
 
-# if shipping.get('portOfDischarge', None) != None:
+# if shipping.get('portOfDestination', None) != None:
     content.append([
-        Paragraph("Port of Discharge", bold_style ),
-        Paragraph(shipping.get('portOfDischarge', ''), styles['Normal'] )
+        Paragraph("Port of Destination", bold_style ),
+        Paragraph(shipping.get('portOfDestination', ''), styles['Normal'] )
     ])
 
 # if shipping.get('finalDestination', None) != None:
