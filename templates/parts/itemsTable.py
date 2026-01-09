@@ -18,7 +18,11 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
     # --- Items Rows ---
     if items is not None:
         for item in items:
-            itemTotal = (Decimal(item['quantity']) * Decimal(item['unitPrice'])).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            qty = Decimal(item['quantity']).quantize(
+                Decimal('0.001'), rounding=ROUND_HALF_UP
+            )
+
+            itemTotal = (qty * Decimal(item['unitPrice'])).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
             data.append([
                 Paragraph(f"{(item['product']['name']).upper()}<br />{item['description']}", styles['Normal']),
                 Paragraph(f"{item['quantity']}", styles['Normal']),
