@@ -33,7 +33,7 @@ def generate_credit_note(buffer, data):
     elements = []
 
     # Bill To and Ship To
-    currency = data.get("paymentTerms", {}).get("currency", "USD")
+    currency = data.get("currency", "USD")
     coordinates = draw_contact_details(data.get("coordinates", None))
     details = draw_credit_note_details(data, currency)
     elements.append(draw_independent_columns([coordinates, details]))

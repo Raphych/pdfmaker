@@ -6,7 +6,7 @@ from babel.numbers import format_currency, format_decimal
 from decimal import Decimal, ROUND_HALF_UP
 
 
-def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTotal=None, discountTotal=None,  grandTotal=None, currency='USD'):
+def draw_items_table(items=None, discount=None, tax=None, totalQuantity=None, subTotal=None, discountTotal=None,  grandTotal=None, currency='USD'):
     data = [['DESCRIPTION', 'QTY', 'UOM', 'PRICE', 'TOTAL']]
 
     styles = getSampleStyleSheet()
@@ -34,7 +34,7 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
 
     # --- Add total quantity line before discounts/taxes ---
     data.append([
-        Paragraph(f"TOTAL WEIGHT: {format_decimal(totalQty, '#,##0.000', locale='en_US')}", bold_right_align_style),
+        Paragraph(f"TOTAL WEIGHT: {format_decimal(totalQuantity, '#,##0.000', locale='en_US')}", bold_right_align_style),
         '', '', '', ''
     ])
 

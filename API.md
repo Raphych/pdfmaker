@@ -60,7 +60,7 @@ Generate an invoice PDF document.
   "subTotal": 10000.00,
   "discountTotal": 500.00,
   "grandTotal": 9975.00,
-  "totalQty": 1500.000,
+  "totalQuantity": 1500.000,
   "termsAndConditions": "Payment due within 30 days.",
   "bankDetails": "Bank Name: ABC Bank---Account: 123456789---SWIFT: ABCDEF"
 }
@@ -85,7 +85,7 @@ Generate an invoice PDF document.
 | subTotal | number | No | Subtotal before tax/discount |
 | discountTotal | number | No | Total discount amount |
 | grandTotal | number | No | Final total |
-| totalQty | number | No | Total quantity/weight |
+| totalQuantity | number | No | Total quantity/weight |
 | termsAndConditions | string | No | Terms text (supports `\n` for line breaks) |
 | bankDetails | string | No | Bank details (use `---` for line breaks) |
 
@@ -114,7 +114,7 @@ Generate a proforma invoice PDF document. Same structure as invoice.
   "subTotal": 10000.00,
   "discountTotal": 500.00,
   "grandTotal": 9975.00,
-  "totalQty": 1500.000,
+  "totalQuantity": 1500.000,
   "termsAndConditions": "Valid for 30 days.",
   "bankDetails": "Bank Name: ABC Bank---Account: 123456789"
 }
@@ -154,7 +154,7 @@ Generate a purchase order PDF document.
   "subTotal": 10000.00,
   "discountTotal": 500.00,
   "grandTotal": 9975.00,
-  "totalQty": 1500.000,
+  "totalQuantity": 1500.000,
   "termsAndConditions": "Delivery terms apply."
 }
 ```
@@ -183,10 +183,10 @@ Generate a credit note PDF document.
   "creditNoteNumber": "CN-2024-001",
   "issuedDate": "2024-01-15T00:00:00Z",
   "customerReference": "REF-001",
+  "currency": "USD",
   "coordinates": { },
   "customer": { },
   "items": [ ],
-  "paymentTerms": { },
   "grandTotal": 500.00,
   "relatedInvoice": {
     "invoiceNumber": "INV-2024-001",
@@ -204,6 +204,7 @@ Generate a credit note PDF document.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | creditNoteNumber | string | Yes | Credit note number |
+| currency | string | No | Currency code (default: `USD`) |
 | relatedInvoice | object | No | Related invoice details |
 
 ---
@@ -441,7 +442,7 @@ Used for `coordinates`, `customer`, `shipTo`, `supplier`, `finalConsignee`.
   ],
   "subTotal": 12500.00,
   "grandTotal": 13531.25,
-  "totalQty": 700.000,
+  "totalQuantity": 700.000,
   "termsAndConditions": "1. Payment due within 30 days of invoice date.\n2. Late payments subject to 1.5% monthly interest.\n3. All disputes subject to California jurisdiction.",
   "bankDetails": "Bank: First National Bank---Account Name: My Company Ltd.---Account Number: 9876543210---Routing: 021000021---SWIFT: FNBKUS33"
 }

@@ -44,7 +44,7 @@ def generate_invoice(buffer, data):
     elements.append(Spacer(400, 20))
 
     # Items Table
-    elements.append(draw_items_table(items=data.get("items", None), discount=data.get("discount", None), tax=data.get("tax", None), subTotal=data.get("subTotal", None), discountTotal=data.get("discountTotal", None), grandTotal=data.get("grandTotal", None), totalQty=data.get("totalQty", None), currency=currency))
+    elements.append(draw_items_table(items=data.get("items", None), discount=data.get("discount", None), tax=data.get("tax", None), subTotal=data.get("subTotal", None), discountTotal=data.get("discountTotal", None), grandTotal=data.get("grandTotal", None), totalQuantity=data.get("totalQuantity", None), currency=currency))
     elements.append(Spacer(400, 20))
 
     # Shipping details and Payment Terms
