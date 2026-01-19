@@ -54,10 +54,10 @@ def generate_invoice(buffer, data):
     
     # Cargo Values Table with formatted currency
     cargoValuesData = [
-        [f"FOB Value", f"{format_currency(data.get('subTotal', 0) - (data.get('shipping', {}).get('cost', 0) or 0) - insuredValue, currency, '#,##0.00 ¤')}"],
-        [f"Freight Value", f"{format_currency(data.get('shipping', {}).get('cost', 0) or 0, currency, '#,##0.00 ¤')}"],
-        [f"Insurance Value", f"{format_currency(insuredValue, currency, '#,##0.00 ¤')}"],
-        [f"Cargo Value", f"{format_currency(data.get('subTotal', 0), currency, '#,##0.00 ¤')}"],
+        [f"FOB Value", f"{format_currency(data.get('subTotal', 0) - (data.get('shipping', {}).get('cost', 0) or 0) - insuredValue, currency, '#,##0.00 ¤', locale='en_US')}"],
+        [f"Freight Value", f"{format_currency(data.get('shipping', {}).get('cost', 0) or 0, currency, '#,##0.00 ¤', locale='en_US')}"],
+        [f"Insurance Value", f"{format_currency(insuredValue, currency, '#,##0.00 ¤', locale='en_US')}"],
+        [f"Cargo Value", f"{format_currency(data.get('subTotal', 0), currency, '#,##0.00 ¤', locale='en_US')}"],
     ]
     
     # Remove Insured Value row if it's zero

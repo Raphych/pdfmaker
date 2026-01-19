@@ -68,7 +68,7 @@ def generate_credit_note(buffer, data):
             left_rows.append(["Customer Reference", data.get("relatedInvoice", {}).get("customerReference", "")])
             
         if data.get("relatedInvoice", {}).get("grandTotal", None) and data.get("relatedInvoice", {}).get("paymentTerms", {}).get("currency", None):
-            left_rows.append(["Related Invoice Total", format_currency(data.get("relatedInvoice", {}).get("grandTotal", 0), data.get("relatedInvoice", {}).get("paymentTerms", {}).get("currency", "USD"))])
+            left_rows.append(["Related Invoice Total", format_currency(data.get("relatedInvoice", {}).get("grandTotal", 0), data.get("relatedInvoice", {}).get("paymentTerms", {}).get("currency", "USD"), locale='en_US')])
 
     left_section = draw_simple_table(left_rows, colWidths=[A4[0] / 5, A4[0] / 5], bold_cols=[0]) if left_rows else Spacer(1, 1)
 
@@ -128,14 +128,14 @@ def draw_credit_note_items_table(items=None, grandTotal=None, currency='USD'):
             data.append([
                 Paragraph(f"{item['description']}", styles['Normal']),
                 Paragraph(f"{item['quantity']}", styles['Normal']),
-                Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤'), right_align_style),
-                Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤'), right_align_style),
+                Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
+                Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
             ])
 
     # --- Grand Total ---
     data.append([
         '', Paragraph('TOTAL', bold_style),
-        Paragraph(format_currency(f"{grandTotal}", currency, '#,##0.00 ¤'), bold_right_align_style),''
+        Paragraph(format_currency(f"{grandTotal}", currency, '#,##0.00 ¤', locale='en_US'), bold_right_align_style),''
     ])
 
     table = Table(

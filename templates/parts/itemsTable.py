@@ -27,20 +27,20 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
                 Paragraph(f"{(item['product']['name']).upper()}<br />{item['description']}", styles['Normal']),
                 Paragraph(f"{item['quantity']}", styles['Normal']),
                 Paragraph(f"{item['uom']}", styles['Normal']),
-                Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤'), right_align_style),
-                Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤'), right_align_style),
+                Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
+                Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
             ])
 
 
     # --- Add total quantity line before discounts/taxes ---
     data.append([
-        Paragraph(f"TOTAL WEIGHT: {format_decimal(totalQty, '#,##0.000')}", bold_right_align_style),
+        Paragraph(f"TOTAL WEIGHT: {format_decimal(totalQty, '#,##0.000', locale='en_US')}", bold_right_align_style),
         '', '', '', ''
     ])
 
     # --- Subtotal if taxes or discount exist ---
     if tax and len(tax) > 0 or discount is not None:
-        data.append(['', '', Paragraph('SUBTOTAL', bold_style), '', Paragraph(format_currency(f"{subTotal}", currency, '#,##0.## ¤'), bold_right_align_style)])
+        data.append(['', '', Paragraph('SUBTOTAL', bold_style), '', Paragraph(format_currency(f"{subTotal}", currency, '#,##0.## ¤', locale='en_US'), bold_right_align_style)])
 
 
     # --- Discounts ---
@@ -63,7 +63,7 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
         )
         data.append([
             '', '', Paragraph("Discount (" + discount.get('description', '') + ")", green_bold_left),
-            '', Paragraph(format_currency(f"{-discountTotal}", currency, '#,##0.00 ¤'), green_bold_right)
+            '', Paragraph(format_currency(f"{-discountTotal}", currency, '#,##0.00 ¤', locale='en_US'), green_bold_right)
         ])
 
     # --- Taxes ---
@@ -74,13 +74,13 @@ def draw_items_table(items=None, discount=None, tax=None, totalQty=None, subTota
             summedTotal = round(subTotal * taxItem['percentage'] / 100, 2)
             data.append([
                 '', '', Paragraph(f"{label} {percentage}", bold_style),
-                '', format_currency(f"{summedTotal}", currency, '#,##0.00 ¤')
+                '', format_currency(f"{summedTotal}", currency, '#,##0.00 ¤', locale='en_US')
             ])
 
     # --- Grand Total ---
     data.append([
         '', '', Paragraph('TOTAL', bold_style),
-        '', Paragraph(format_currency(f"{grandTotal}", currency, '#,##0.00 ¤'), bold_right_align_style)
+        '', Paragraph(format_currency(f"{grandTotal}", currency, '#,##0.00 ¤', locale='en_US'), bold_right_align_style)
     ])
 
     # --- Table Setup ---
