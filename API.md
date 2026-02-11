@@ -4,6 +4,8 @@ REST API for generating PDF documents (invoices, proformas, purchase orders, and
 
 **Base URL:** `http://localhost:5002`
 
+All values (item totals, tax totals, subtotals, grand totals, cargo values) must be precalculated by the caller. This service only formats and renders — it performs no arithmetic.
+
 ---
 
 ## Endpoints
@@ -59,8 +61,9 @@ Generate an invoice PDF document.
   "tax": [ ],
   "subTotal": 10000.00,
   "discountTotal": 500.00,
-  "grandTotal": 9975.00,
+  "total": 9975.00,
   "totalQuantity": 1500.000,
+  "cargoValues": { },
   "termsAndConditions": "Payment due within 30 days.",
   "bankDetails": "Bank Name: ABC Bank---Account: 123456789---SWIFT: ABCDEF"
 }
@@ -77,15 +80,16 @@ Generate an invoice PDF document.
 | coordinates | object | No | Company/sender contact details |
 | customer | object | No | Bill-to contact details |
 | shipTo | object | No | Ship-to contact details |
-| items | array | No | Line items |
+| items | array | No | Line items (with precalculated `total`) |
 | paymentTerms | object | No | Payment terms and currency |
 | shipping | object | No | Shipping details |
 | discount | object | No | Discount information |
-| tax | array | No | Tax items |
+| tax | array | No | Tax items (with precalculated `total`) |
 | subTotal | number | No | Subtotal before tax/discount |
 | discountTotal | number | No | Total discount amount |
-| grandTotal | number | No | Final total |
+| total | number | No | Final total |
 | totalQuantity | number | No | Total quantity/weight |
+| cargoValues | object | No | Precalculated cargo values (FOB, freight, insurance, cargo) |
 | termsAndConditions | string | No | Terms text (supports `\n` for line breaks) |
 | bankDetails | string | No | Bank details (use `---` for line breaks) |
 
@@ -113,8 +117,9 @@ Generate a proforma invoice PDF document. Same structure as invoice.
   "tax": [ ],
   "subTotal": 10000.00,
   "discountTotal": 500.00,
-  "grandTotal": 9975.00,
+  "total": 9975.00,
   "totalQuantity": 1500.000,
+  "cargoValues": { },
   "termsAndConditions": "Valid for 30 days.",
   "bankDetails": "Bank Name: ABC Bank---Account: 123456789"
 }
@@ -153,7 +158,7 @@ Generate a purchase order PDF document.
   "tax": [ ],
   "subTotal": 10000.00,
   "discountTotal": 500.00,
-  "grandTotal": 9975.00,
+  "total": 9975.00,
   "totalQuantity": 1500.000,
   "termsAndConditions": "Delivery terms apply."
 }
@@ -187,12 +192,12 @@ Generate a credit note PDF document.
   "coordinates": { },
   "customer": { },
   "items": [ ],
-  "grandTotal": 500.00,
+  "total": 500.00,
   "relatedInvoice": {
     "invoiceNumber": "INV-2024-001",
     "issuedDate": "2024-01-01T00:00:00Z",
     "customerReference": "PO-12345",
-    "grandTotal": 10000.00,
+    "total": 10000.00,
     "paymentTerms": {
       "currency": "USD"
     }
@@ -205,7 +210,13 @@ Generate a credit note PDF document.
 |-------|------|----------|-------------|
 | creditNoteNumber | string | Yes | Credit note number |
 | currency | string | No | Currency code (default: `USD`) |
+| total | number | No | Credit note total |
 | relatedInvoice | object | No | Related invoice details |
+| relatedInvoice.invoiceNumber | string | No | Original invoice number |
+| relatedInvoice.issuedDate | string | No | Original invoice date (ISO 8601) |
+| relatedInvoice.customerReference | string | No | Original customer reference |
+| relatedInvoice.total | number | No | Original invoice total |
+| relatedInvoice.paymentTerms.currency | string | No | Original invoice currency |
 
 ---
 
@@ -247,6 +258,8 @@ Used for `coordinates`, `customer`, `shipTo`, `supplier`, `finalConsignee`.
 
 ### Item Object
 
+Used for invoices, proformas, and purchase orders.
+
 ```json
 {
   "product": {
@@ -255,7 +268,8 @@ Used for `coordinates`, `customer`, `shipTo`, `supplier`, `finalConsignee`.
   "description": "Detailed product description",
   "quantity": 100.5,
   "uom": "KG",
-  "unitPrice": 25.00
+  "unitPrice": 15.00,
+  "total": 1507.50
 }
 ```
 
@@ -263,11 +277,12 @@ Used for `coordinates`, `customer`, `shipTo`, `supplier`, `finalConsignee`.
 |-------|------|-------------|
 | product.name | string | Product name (displayed uppercase) |
 | description | string | Item description |
-| quantity | number | Quantity (supports 3 decimal places) |
+| quantity | number | Quantity |
 | uom | string | Unit of measure |
 | unitPrice | number | Price per unit |
+| total | number | Precalculated line total |
 
-**Note:** For credit notes, items only require `description`, `quantity`, and `unitPrice`.
+**Credit note items** only require `description`, `quantity`, `unitPrice`, and `total`.
 
 ---
 
@@ -290,8 +305,6 @@ Used for `coordinates`, `customer`, `shipTo`, `supplier`, `finalConsignee`.
 | incoterms | string | Incoterms code (e.g., FOB, CIF, CIP, DDP) |
 | incotermsDestination | string | Incoterms destination |
 | code.definition | string | Payment terms description |
-
-**Insurance Calculation:** For incoterms `CIF`, `CPT`, `CIP`, `DPU`, `DAP`, `DDP`, `DDU`, insurance is auto-calculated as `subTotal * 0.18%` rounded up to nearest 5.
 
 ---
 
@@ -329,6 +342,28 @@ Used for `coordinates`, `customer`, `shipTo`, `supplier`, `finalConsignee`.
 
 ---
 
+### Cargo Values Object
+
+Used in invoices and proformas. All values must be precalculated by the caller.
+
+```json
+{
+  "fobValue": 10000.00,
+  "freightValue": 2500.00,
+  "insuranceValue": 25.00,
+  "cargoValue": 12525.00
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| fobValue | number | FOB value |
+| freightValue | number | Freight cost |
+| insuranceValue | number | Insurance value (row hidden if `0` or absent) |
+| cargoValue | number | Total cargo value |
+
+---
+
 ### Discount Object
 
 ```json
@@ -341,7 +376,7 @@ Used for `coordinates`, `customer`, `shipTo`, `supplier`, `finalConsignee`.
 |-------|------|-------------|
 | description | string | Discount description |
 
-**Note:** The `discountTotal` field in the main request body specifies the discount amount.
+The `discountTotal` field in the main request body specifies the precalculated discount amount.
 
 ---
 
@@ -350,16 +385,16 @@ Used for `coordinates`, `customer`, `shipTo`, `supplier`, `finalConsignee`.
 ```json
 {
   "label": "VAT",
-  "percentage": 10.0
+  "percentage": 10.0,
+  "total": 1000.00
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | label | string | Tax name/label |
-| percentage | number | Tax percentage |
-
-**Note:** Tax is calculated as `subTotal * percentage / 100`.
+| percentage | number | Tax percentage (displayed in label) |
+| total | number | Precalculated tax amount |
 
 ---
 
@@ -406,14 +441,16 @@ Used for `coordinates`, `customer`, `shipTo`, `supplier`, `finalConsignee`.
       "description": "Arabica Grade A, Origin: Colombia",
       "quantity": 500.000,
       "uom": "KG",
-      "unitPrice": 15.00
+      "unitPrice": 15.00,
+      "total": 7500.00
     },
     {
       "product": { "name": "Green Tea Leaves" },
       "description": "Organic, Origin: Japan",
       "quantity": 200.000,
       "uom": "KG",
-      "unitPrice": 25.00
+      "unitPrice": 25.00,
+      "total": 5000.00
     }
   ],
   "paymentTerms": {
@@ -438,11 +475,17 @@ Used for `coordinates`, `customer`, `shipTo`, `supplier`, `finalConsignee`.
     "cost": 2500.00
   },
   "tax": [
-    { "label": "Sales Tax", "percentage": 8.25 }
+    { "label": "Sales Tax", "percentage": 8.25, "total": 1031.25 }
   ],
   "subTotal": 12500.00,
-  "grandTotal": 13531.25,
+  "total": 13531.25,
   "totalQuantity": 700.000,
+  "cargoValues": {
+    "fobValue": 9975.00,
+    "freightValue": 2500.00,
+    "insuranceValue": 25.00,
+    "cargoValue": 12500.00
+  },
   "termsAndConditions": "1. Payment due within 30 days of invoice date.\n2. Late payments subject to 1.5% monthly interest.\n3. All disputes subject to California jurisdiction.",
   "bankDetails": "Bank: First National Bank---Account Name: My Company Ltd.---Account Number: 9876543210---Routing: 021000021---SWIFT: FNBKUS33"
 }

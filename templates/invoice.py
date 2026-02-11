@@ -44,24 +44,23 @@ def generate_invoice(buffer, data):
     elements.append(Spacer(400, 20))
 
     # Items Table
-    elements.append(draw_items_table(items=data.get("items", None), discount=data.get("discount", None), tax=data.get("tax", None), subTotal=data.get("subTotal", None), discountTotal=data.get("discountTotal", None), grandTotal=data.get("grandTotal", None), totalQuantity=data.get("totalQuantity", None), currency=currency))
+    elements.append(draw_items_table(items=data.get("items", None), discount=data.get("discount", None), tax=data.get("tax", None), subTotal=data.get("subTotal", None), discountTotal=data.get("discountTotal", None), total=data.get("total", None), totalQuantity=data.get("totalQuantity", None), currency=currency))
     elements.append(Spacer(400, 20))
 
     # Shipping details and Payment Terms
     shipping = draw_shipping_details(data.get("shipping", None))
-    # Add cargo values to the shipping details
-    insuredValue = get_insured_value(float(data.get("subTotal", 0)), data.get("paymentTerms", {}).get("incoterms", ""))
-    
-    # Cargo Values Table with formatted currency
+
+    # Cargo Values Table with precalculated values
+    cargoValues_data = data.get("cargoValues", {})
     cargoValuesData = [
-        [f"FOB Value", f"{format_currency(data.get('subTotal', 0) - (data.get('shipping', {}).get('cost', 0) or 0) - insuredValue, currency, '#,##0.00 ¤', locale='en_US')}"],
-        [f"Freight Value", f"{format_currency(data.get('shipping', {}).get('cost', 0) or 0, currency, '#,##0.00 ¤', locale='en_US')}"],
-        [f"Insurance Value", f"{format_currency(insuredValue, currency, '#,##0.00 ¤', locale='en_US')}"],
-        [f"Cargo Value", f"{format_currency(data.get('subTotal', 0), currency, '#,##0.00 ¤', locale='en_US')}"],
+        ["FOB Value", format_currency(cargoValues_data.get('fobValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
+        ["Freight Value", format_currency(cargoValues_data.get('freightValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
+        ["Insurance Value", format_currency(cargoValues_data.get('insuranceValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
+        ["Cargo Value", format_currency(cargoValues_data.get('cargoValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
     ]
-    
-    # Remove Insured Value row if it's zero
-    if insuredValue == 0:
+
+    # Remove Insurance Value row if it's zero
+    if not cargoValues_data.get('insuranceValue'):
         cargoValuesData.pop(2)
     cargoValues = draw_simple_table(cargoValuesData, [A4[0] / 5, A4[0] / 5 ], bold_cols=[0])
 
@@ -114,14 +113,3 @@ def draw_invoice_details(data, currency):
     ]))
 
     return table
-
-# Compute cargo value translating the logic from TypeScript to Python
-def get_insured_value(sub_total: float, incoterms: str) -> float:
-    insured_value = 0
-    if incoterms in ['CIF', 'CPT', 'CIP', 'DPU', 'DAP', 'DDP', 'DDU']:
-        insured_value = round(sub_total * 0.0018)
-    
-    while insured_value % 5 != 0:
-        insured_value += 1
-
-    return insured_value

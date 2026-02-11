@@ -1,6 +1,8 @@
 from flask import Flask, Response, request, jsonify, send_file
 import io
+import json
 import logging
+import os
 import sys
 import traceback
 
@@ -38,6 +40,37 @@ except Exception as e:
     raise
 
 app = Flask(__name__)
+
+# --- Swagger / OpenAPI docs ---
+
+SWAGGER_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'swagger.json')
+
+@app.route('/api-docs.json')
+def swagger_json():
+    with open(SWAGGER_PATH, 'r') as f:
+        spec = json.load(f)
+    return jsonify(spec)
+
+@app.route('/api-docs')
+def swagger_ui():
+    html = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Maker API Docs</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css">
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+  <script>
+    SwaggerUIBundle({ url: "/api-docs.json", dom_id: "#swagger-ui" });
+  </script>
+</body>
+</html>'''
+    return Response(html, mimetype='text/html')
+
+# --- PDF generation endpoints ---
 
 @app.route('/pdf/invoice', methods=['POST'])
 def generate_invoice():

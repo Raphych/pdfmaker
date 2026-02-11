@@ -3,10 +3,9 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from babel.numbers import format_currency, format_decimal
-from decimal import Decimal, ROUND_HALF_UP
 
 
-def draw_items_table(items=None, discount=None, tax=None, totalQuantity=None, subTotal=None, discountTotal=None,  grandTotal=None, currency='USD'):
+def draw_items_table(items=None, discount=None, tax=None, totalQuantity=None, subTotal=None, discountTotal=None, total=None, currency='USD'):
     data = [['DESCRIPTION', 'QTY', 'UOM', 'PRICE', 'TOTAL']]
 
     styles = getSampleStyleSheet()
@@ -18,17 +17,12 @@ def draw_items_table(items=None, discount=None, tax=None, totalQuantity=None, su
     # --- Items Rows ---
     if items is not None:
         for item in items:
-            qty = Decimal(item['quantity']).quantize(
-                Decimal('0.001'), rounding=ROUND_HALF_UP
-            )
-
-            itemTotal = (qty * Decimal(item['unitPrice'])).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
             data.append([
                 Paragraph(f"{(item['product']['name']).upper()}<br />{item['description']}", styles['Normal']),
                 Paragraph(f"{item['quantity']}", styles['Normal']),
                 Paragraph(f"{item['uom']}", styles['Normal']),
                 Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
-                Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
+                Paragraph(format_currency(item['total'], currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
             ])
 
 
@@ -71,16 +65,15 @@ def draw_items_table(items=None, discount=None, tax=None, totalQuantity=None, su
         for taxItem in tax:
             label = f"{taxItem['label']}"
             percentage = f"({str(round(taxItem['percentage'], 3)).rstrip('.0')}%)"
-            summedTotal = round(subTotal * taxItem['percentage'] / 100, 2)
             data.append([
                 '', '', Paragraph(f"{label} {percentage}", bold_style),
-                '', format_currency(f"{summedTotal}", currency, '#,##0.00 ¤', locale='en_US')
+                '', format_currency(f"{taxItem['total']}", currency, '#,##0.00 ¤', locale='en_US')
             ])
 
     # --- Grand Total ---
     data.append([
         '', '', Paragraph('TOTAL', bold_style),
-        '', Paragraph(format_currency(f"{grandTotal}", currency, '#,##0.00 ¤', locale='en_US'), bold_right_align_style)
+        '', Paragraph(format_currency(f"{total}", currency, '#,##0.00 ¤', locale='en_US'), bold_right_align_style)
     ])
 
     # --- Table Setup ---

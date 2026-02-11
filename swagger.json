@@ -1,0 +1,370 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PDF Maker API",
+    "description": "REST API for generating PDF documents (invoices, proformas, purchase orders, and credit notes).\n\nAll values (item totals, tax totals, subtotals, grand totals, cargo values) must be precalculated by the caller. This service only formats and renders — it performs no arithmetic.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5002",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/pdf/invoice": {
+      "post": {
+        "summary": "Generate an invoice PDF",
+        "operationId": "generateInvoice",
+        "tags": ["PDF Generation"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvoiceRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/PdfResponse" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/pdf/proforma": {
+      "post": {
+        "summary": "Generate a proforma invoice PDF",
+        "operationId": "generateProforma",
+        "tags": ["PDF Generation"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProformaRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/PdfResponse" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/pdf/order": {
+      "post": {
+        "summary": "Generate a purchase order PDF",
+        "operationId": "generateOrder",
+        "tags": ["PDF Generation"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/OrderRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/PdfResponse" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/pdf/credit-note": {
+      "post": {
+        "summary": "Generate a credit note PDF",
+        "operationId": "generateCreditNote",
+        "tags": ["PDF Generation"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreditNoteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/PdfResponse" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Contact": {
+        "type": "object",
+        "description": "Contact/company details used for coordinates, customer, shipTo, supplier, and finalConsignee.",
+        "properties": {
+          "name": { "type": "string", "description": "Contact/company name" },
+          "taxId": { "type": "string", "description": "Tax identification number" },
+          "address": { "type": "string", "description": "Street address" },
+          "city": { "type": "string", "description": "City" },
+          "province": { "type": "string", "description": "State/province" },
+          "country": { "type": "string", "description": "Country" },
+          "zip": { "type": "string", "description": "Postal/ZIP code" },
+          "email": { "type": "string", "description": "Email address" },
+          "phone": { "type": "string", "description": "Phone number" },
+          "others": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Additional text lines"
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "description": "Line item for invoices, proformas, and purchase orders.",
+        "properties": {
+          "product": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "description": "Product name (displayed uppercase)" }
+            }
+          },
+          "description": { "type": "string", "description": "Item description" },
+          "quantity": { "type": "number", "description": "Quantity" },
+          "uom": { "type": "string", "description": "Unit of measure" },
+          "unitPrice": { "type": "number", "description": "Price per unit" },
+          "total": { "type": "number", "description": "Precalculated line total" }
+        }
+      },
+      "CreditNoteItem": {
+        "type": "object",
+        "description": "Line item for credit notes.",
+        "properties": {
+          "description": { "type": "string", "description": "Item description" },
+          "quantity": { "type": "number", "description": "Quantity" },
+          "unitPrice": { "type": "number", "description": "Price per unit" },
+          "total": { "type": "number", "description": "Precalculated line total" }
+        }
+      },
+      "PaymentTerms": {
+        "type": "object",
+        "description": "Payment terms and currency information.",
+        "properties": {
+          "currency": { "type": "string", "description": "Currency code (default: USD)", "default": "USD" },
+          "incoterms": { "type": "string", "description": "Incoterms code (e.g., FOB, CIF, CIP, DDP)" },
+          "incotermsDestination": { "type": "string", "description": "Incoterms destination" },
+          "code": {
+            "type": "object",
+            "properties": {
+              "definition": { "type": "string", "description": "Payment terms description" }
+            }
+          }
+        }
+      },
+      "Shipping": {
+        "type": "object",
+        "description": "Shipping and logistics details.",
+        "properties": {
+          "bookingNumber": { "type": "string", "description": "Booking reference number" },
+          "billOfLadingNumber": { "type": "string", "description": "Bill of lading number" },
+          "carrier": { "type": "string", "description": "Shipping carrier name" },
+          "vessel": { "type": "string", "description": "Vessel name" },
+          "voyageNumber": { "type": "string", "description": "Voyage number" },
+          "ets": { "type": "string", "format": "date-time", "description": "Estimated time of shipment (ISO 8601)" },
+          "eta": { "type": "string", "format": "date-time", "description": "Estimated time of arrival (ISO 8601)" },
+          "portOfLoading": { "type": "string", "description": "Origin port" },
+          "portOfDestination": { "type": "string", "description": "Destination port" },
+          "finalDestination": { "type": "string", "description": "Final delivery destination" },
+          "cost": { "type": "number", "description": "Freight cost" }
+        }
+      },
+      "CargoValues": {
+        "type": "object",
+        "description": "Precalculated cargo values for invoices and proformas.",
+        "properties": {
+          "fobValue": { "type": "number", "description": "FOB value" },
+          "freightValue": { "type": "number", "description": "Freight cost" },
+          "insuranceValue": { "type": "number", "description": "Insurance value (row hidden if 0 or absent)" },
+          "cargoValue": { "type": "number", "description": "Total cargo value" }
+        }
+      },
+      "Discount": {
+        "type": "object",
+        "description": "Discount information.",
+        "properties": {
+          "description": { "type": "string", "description": "Discount description" }
+        }
+      },
+      "Tax": {
+        "type": "object",
+        "description": "Tax line item with precalculated amount.",
+        "properties": {
+          "label": { "type": "string", "description": "Tax name/label" },
+          "percentage": { "type": "number", "description": "Tax percentage (displayed in label)" },
+          "total": { "type": "number", "description": "Precalculated tax amount" }
+        }
+      },
+      "RelatedInvoice": {
+        "type": "object",
+        "description": "Related invoice details for credit notes.",
+        "properties": {
+          "invoiceNumber": { "type": "string", "description": "Original invoice number" },
+          "issuedDate": { "type": "string", "format": "date-time", "description": "Original invoice date (ISO 8601)" },
+          "customerReference": { "type": "string", "description": "Original customer reference" },
+          "total": { "type": "number", "description": "Original invoice total" },
+          "paymentTerms": {
+            "type": "object",
+            "properties": {
+              "currency": { "type": "string", "description": "Original invoice currency" }
+            }
+          }
+        }
+      },
+      "InvoiceRequest": {
+        "type": "object",
+        "required": ["invoiceNumber", "issuedDate"],
+        "properties": {
+          "filename": { "type": "string", "description": "Output filename (default: invoice.pdf)", "default": "invoice.pdf" },
+          "invoiceNumber": { "type": "string", "description": "Invoice number" },
+          "issuedDate": { "type": "string", "format": "date-time", "description": "Issue date (ISO 8601)" },
+          "customerReference": { "type": "string", "description": "Customer's reference number" },
+          "coordinates": { "$ref": "#/components/schemas/Contact" },
+          "customer": { "$ref": "#/components/schemas/Contact" },
+          "shipTo": { "$ref": "#/components/schemas/Contact" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Item" }
+          },
+          "paymentTerms": { "$ref": "#/components/schemas/PaymentTerms" },
+          "shipping": { "$ref": "#/components/schemas/Shipping" },
+          "discount": { "$ref": "#/components/schemas/Discount" },
+          "tax": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Tax" }
+          },
+          "subTotal": { "type": "number", "description": "Subtotal before tax/discount" },
+          "discountTotal": { "type": "number", "description": "Total discount amount" },
+          "total": { "type": "number", "description": "Final total" },
+          "totalQuantity": { "type": "number", "description": "Total quantity/weight" },
+          "cargoValues": { "$ref": "#/components/schemas/CargoValues" },
+          "termsAndConditions": { "type": "string", "description": "Terms text (supports \\n for line breaks)" },
+          "bankDetails": { "type": "string", "description": "Bank details (use --- for line breaks)" }
+        }
+      },
+      "ProformaRequest": {
+        "type": "object",
+        "required": ["proformaNumber", "issuedDate"],
+        "properties": {
+          "filename": { "type": "string", "description": "Output filename (default: proforma.pdf)", "default": "proforma.pdf" },
+          "proformaNumber": { "type": "string", "description": "Proforma number" },
+          "issuedDate": { "type": "string", "format": "date-time", "description": "Issue date (ISO 8601)" },
+          "customerReference": { "type": "string", "description": "Customer's reference number" },
+          "coordinates": { "$ref": "#/components/schemas/Contact" },
+          "customer": { "$ref": "#/components/schemas/Contact" },
+          "shipTo": { "$ref": "#/components/schemas/Contact" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Item" }
+          },
+          "paymentTerms": { "$ref": "#/components/schemas/PaymentTerms" },
+          "shipping": { "$ref": "#/components/schemas/Shipping" },
+          "discount": { "$ref": "#/components/schemas/Discount" },
+          "tax": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Tax" }
+          },
+          "subTotal": { "type": "number", "description": "Subtotal before tax/discount" },
+          "discountTotal": { "type": "number", "description": "Total discount amount" },
+          "total": { "type": "number", "description": "Final total" },
+          "totalQuantity": { "type": "number", "description": "Total quantity/weight" },
+          "cargoValues": { "$ref": "#/components/schemas/CargoValues" },
+          "termsAndConditions": { "type": "string", "description": "Terms text (supports \\n for line breaks)" },
+          "bankDetails": { "type": "string", "description": "Bank details (use --- for line breaks)" }
+        }
+      },
+      "OrderRequest": {
+        "type": "object",
+        "required": ["orderNumber", "issuedDate"],
+        "properties": {
+          "filename": { "type": "string", "description": "Output filename (default: purchaseorder.pdf)", "default": "purchaseorder.pdf" },
+          "orderNumber": { "type": "string", "description": "Purchase order number" },
+          "issuedDate": { "type": "string", "format": "date-time", "description": "Issue date (ISO 8601)" },
+          "supplierReference": { "type": "string", "description": "Supplier's reference" },
+          "deliveryDate": { "type": "string", "format": "date-time", "description": "Expected delivery date (ISO 8601)" },
+          "countryOfDischarge": { "type": "string", "description": "Destination country" },
+          "portOfDischarge": { "type": "string", "description": "Destination port" },
+          "coordinates": { "$ref": "#/components/schemas/Contact" },
+          "supplier": { "$ref": "#/components/schemas/Contact" },
+          "shipTo": { "$ref": "#/components/schemas/Contact" },
+          "finalConsignee": { "$ref": "#/components/schemas/Contact" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Item" }
+          },
+          "paymentTerms": { "$ref": "#/components/schemas/PaymentTerms" },
+          "discount": { "$ref": "#/components/schemas/Discount" },
+          "tax": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Tax" }
+          },
+          "subTotal": { "type": "number", "description": "Subtotal before tax/discount" },
+          "discountTotal": { "type": "number", "description": "Total discount amount" },
+          "total": { "type": "number", "description": "Final total" },
+          "totalQuantity": { "type": "number", "description": "Total quantity/weight" },
+          "termsAndConditions": { "type": "string", "description": "Terms text (supports \\n for line breaks)" }
+        }
+      },
+      "CreditNoteRequest": {
+        "type": "object",
+        "required": ["creditNoteNumber", "issuedDate"],
+        "properties": {
+          "filename": { "type": "string", "description": "Output filename (default: creditnote.pdf)", "default": "creditnote.pdf" },
+          "creditNoteNumber": { "type": "string", "description": "Credit note number" },
+          "issuedDate": { "type": "string", "format": "date-time", "description": "Issue date (ISO 8601)" },
+          "customerReference": { "type": "string", "description": "Customer's reference number" },
+          "currency": { "type": "string", "description": "Currency code (default: USD)", "default": "USD" },
+          "coordinates": { "$ref": "#/components/schemas/Contact" },
+          "customer": { "$ref": "#/components/schemas/Contact" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CreditNoteItem" }
+          },
+          "total": { "type": "number", "description": "Credit note total" },
+          "relatedInvoice": { "$ref": "#/components/schemas/RelatedInvoice" },
+          "termsAndConditions": { "type": "string", "description": "Terms text (supports \\n for line breaks)" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "description": "Error message" }
+        }
+      }
+    },
+    "responses": {
+      "PdfResponse": {
+        "description": "PDF file generated successfully",
+        "content": {
+          "application/pdf": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Invalid or missing JSON content",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "ServerError": {
+        "description": "Internal server error during PDF generation",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      }
+    }
+  }
+}

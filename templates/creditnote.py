@@ -9,7 +9,6 @@ from templates.parts.layout import layout, PageNumCanvas, draw_independent_colum
 from babel.numbers import format_currency
 
 from reportlab.lib.units import inch
-from decimal import Decimal, ROUND_HALF_UP
 
 
 styles = getSampleStyleSheet()
@@ -46,7 +45,7 @@ def generate_credit_note(buffer, data):
     elements.append(Spacer(400, 20))
 
     # Items Table
-    elements.append(draw_credit_note_items_table(items=data.get("items", None), grandTotal=data.get("grandTotal", None), currency=currency))
+    elements.append(draw_credit_note_items_table(items=data.get("items", None), total=data.get("total", None), currency=currency))
     elements.append(Spacer(400, 20))
 
     # Insert line break after title
@@ -67,8 +66,8 @@ def generate_credit_note(buffer, data):
         if data.get("relatedInvoice", {}).get("customerReference", None):
             left_rows.append(["Customer Reference", data.get("relatedInvoice", {}).get("customerReference", "")])
             
-        if data.get("relatedInvoice", {}).get("grandTotal", None) and data.get("relatedInvoice", {}).get("paymentTerms", {}).get("currency", None):
-            left_rows.append(["Related Invoice Total", format_currency(data.get("relatedInvoice", {}).get("grandTotal", 0), data.get("relatedInvoice", {}).get("paymentTerms", {}).get("currency", "USD"), locale='en_US')])
+        if data.get("relatedInvoice", {}).get("total", None) and data.get("relatedInvoice", {}).get("paymentTerms", {}).get("currency", None):
+            left_rows.append(["Related Invoice Total", format_currency(data.get("relatedInvoice", {}).get("total", 0), data.get("relatedInvoice", {}).get("paymentTerms", {}).get("currency", "USD"), locale='en_US')])
 
     left_section = draw_simple_table(left_rows, colWidths=[A4[0] / 5, A4[0] / 5], bold_cols=[0]) if left_rows else Spacer(1, 1)
 
@@ -113,7 +112,7 @@ def draw_credit_note_details(data, currency):
 
 
 
-def draw_credit_note_items_table(items=None, grandTotal=None, currency='USD'):
+def draw_credit_note_items_table(items=None, total=None, currency='USD'):
     data = [['DESCRIPTION', 'QTY', 'PRICE', 'TOTAL']]
 
     styles = getSampleStyleSheet()
@@ -124,18 +123,17 @@ def draw_credit_note_items_table(items=None, grandTotal=None, currency='USD'):
     # --- Items Rows ---
     if items is not None:
         for item in items:
-            itemTotal = (Decimal(item['quantity']) * Decimal(item['unitPrice'])).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
             data.append([
                 Paragraph(f"{item['description']}", styles['Normal']),
                 Paragraph(f"{item['quantity']}", styles['Normal']),
                 Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
-                Paragraph(format_currency(itemTotal, currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
+                Paragraph(format_currency(item['total'], currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
             ])
 
-    # --- Grand Total ---
+    # --- Total ---
     data.append([
         '', Paragraph('TOTAL', bold_style),
-        Paragraph(format_currency(f"{grandTotal}", currency, '#,##0.00 ¤', locale='en_US'), bold_right_align_style),''
+        Paragraph(format_currency(f"{total}", currency, '#,##0.00 ¤', locale='en_US'), bold_right_align_style),''
     ])
 
     table = Table(
