@@ -121,19 +121,20 @@ def draw_credit_note_items_table(items=None, total=None, currency='USD'):
     bold_right_align_style = ParagraphStyle(name='BoldRightAlign', parent=bold_style, alignment=2)
 
     # --- Items Rows ---
+    # Use abs() to display positive values on PDF (credit notes are stored with negative values)
     if items is not None:
         for item in items:
             data.append([
                 Paragraph(f"{item['description']}", styles['Normal']),
                 Paragraph(f"{item['quantity']}", styles['Normal']),
-                Paragraph(format_currency(item['unitPrice'], currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
-                Paragraph(format_currency(item['total'], currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
+                Paragraph(format_currency(abs(item['unitPrice']), currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
+                Paragraph(format_currency(abs(item['total']), currency, '#,##0.00 ¤', locale='en_US'), right_align_style),
             ])
 
     # --- Total ---
     data.append([
         '', Paragraph('TOTAL', bold_style),
-        Paragraph(format_currency(f"{total}", currency, '#,##0.00 ¤', locale='en_US'), bold_right_align_style),''
+        Paragraph(format_currency(abs(float(total or 0)), currency, '#,##0.00 ¤', locale='en_US'), bold_right_align_style),''
     ])
 
     table = Table(
