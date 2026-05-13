@@ -55,8 +55,23 @@ def draw_items_table(items=None, discount=None, tax=None, totalQuantity=None, su
             textColor=colors.green,
             alignment=2  # right
         )
+        operator = discount.get('operator')
+        amount = discount.get('amount') or 0
+        if operator == 'percentage':
+            amount_str = f"{format_decimal(amount, '#,##0.##', locale='en_US')}%"
+        elif operator == 'unit':
+            amount_str = f"{format_currency(amount, currency, '#,##0.00 ¤', locale='en_US')}/unit"
+        elif operator == 'fixed':
+            amount_str = format_currency(amount, currency, '#,##0.00 ¤', locale='en_US')
+        else:
+            amount_str = ''
+
+        description = discount.get('description', '') or ''
+        label_inner = ', '.join(p for p in [description, amount_str] if p)
+        discount_label = f"Discount ({label_inner})" if label_inner else "Discount"
+
         data.append([
-            '', '', Paragraph("Discount (" + discount.get('description', '') + ")", green_bold_left),
+            '', '', Paragraph(discount_label, green_bold_left),
             '', Paragraph(format_currency(f"{-discountTotal}", currency, '#,##0.00 ¤', locale='en_US'), green_bold_right)
         ])
 
