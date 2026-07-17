@@ -52,11 +52,12 @@ def generate_invoice(buffer, data):
 
     # Cargo Values Table with precalculated values
     cargoValues_data = data.get("cargoValues", {})
+    incoterms = data.get('paymentTerms', {}).get('incoterms', 'Cargo')
     cargoValuesData = [
         ["FOB Value", format_currency(cargoValues_data.get('fobValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
         ["Freight Value", format_currency(cargoValues_data.get('freightValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
         ["Insurance Value", format_currency(cargoValues_data.get('insuranceValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
-        ["Cargo Value", format_currency(cargoValues_data.get('cargoValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
+        [f"{incoterms} Value", format_currency(cargoValues_data.get('cargoValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
     ]
 
     # Remove Insurance Value row if it's zero
