@@ -55,7 +55,7 @@ def generate_proforma(buffer, data):
     incoterms = data.get('paymentTerms', {}).get('incoterms', 'Cargo')
     cargo_fields = ['fobValue', 'freightValue', 'insuranceValue', 'cargoValue']
     cargoValues = None
-    if cargoValues_data and any(cargoValues_data.get(f) for f in cargo_fields):
+    if shipping and cargoValues_data and any(cargoValues_data.get(f) for f in cargo_fields):
         cargoValuesData = [
             ["FOB Value", format_currency(cargoValues_data.get('fobValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
             ["Freight Value", format_currency(cargoValues_data.get('freightValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
