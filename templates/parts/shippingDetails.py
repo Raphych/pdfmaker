@@ -4,9 +4,14 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import datetime 
 
+SHIPPING_FIELDS = ['bookingNumber', 'billOfLadingNumber', 'carrier', 'vessel', 'voyageNumber', 'ets', 'eta', 'portOfLoading', 'portOfDestination', 'finalDestination']
+
 def draw_shipping_details(shipping):
+    if not shipping or not any(shipping.get(f) for f in SHIPPING_FIELDS):
+        return None
+
     content = []
-    
+
     styles = getSampleStyleSheet()
     bold_style = ParagraphStyle(name='Bold', parent=styles['Normal'], fontName='Helvetica-Bold')
 

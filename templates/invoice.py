@@ -71,7 +71,7 @@ def generate_invoice(buffer, data):
     terms_text = f"<b>Terms and Conditions</b><br/>{html_terms}"
     terms_paragraph = Paragraph(terms_text, styles['Normal'])
 
-    left_section = [ shipping, Spacer(0, 12), cargoValues ]
+    left_section = ([shipping, Spacer(0, 12)] if shipping else []) + [cargoValues]
 
     elements.append(draw_independent_columns([left_section, terms_paragraph], innerVerticalColumns=True))
 
