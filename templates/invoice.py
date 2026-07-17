@@ -53,17 +53,18 @@ def generate_invoice(buffer, data):
     # Cargo Values Table with precalculated values
     cargoValues_data = data.get("cargoValues", {})
     incoterms = data.get('paymentTerms', {}).get('incoterms', 'Cargo')
-    cargoValuesData = [
-        ["FOB Value", format_currency(cargoValues_data.get('fobValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
-        ["Freight Value", format_currency(cargoValues_data.get('freightValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
-        ["Insurance Value", format_currency(cargoValues_data.get('insuranceValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
-        [f"{incoterms} Value", format_currency(cargoValues_data.get('cargoValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
-    ]
-
-    # Remove Insurance Value row if it's zero
-    if not cargoValues_data.get('insuranceValue'):
-        cargoValuesData.pop(2)
-    cargoValues = draw_simple_table(cargoValuesData, [A4[0] / 5, A4[0] / 5 ], bold_cols=[0])
+    cargo_fields = ['fobValue', 'freightValue', 'insuranceValue', 'cargoValue']
+    cargoValues = None
+    if cargoValues_data and any(cargoValues_data.get(f) for f in cargo_fields):
+        cargoValuesData = [
+            ["FOB Value", format_currency(cargoValues_data.get('fobValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
+            ["Freight Value", format_currency(cargoValues_data.get('freightValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
+            ["Insurance Value", format_currency(cargoValues_data.get('insuranceValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
+            [f"{incoterms} Value", format_currency(cargoValues_data.get('cargoValue', 0), currency, '#,##0.00 ¤', locale='en_US')],
+        ]
+        if not cargoValues_data.get('insuranceValue'):
+            cargoValuesData.pop(2)
+        cargoValues = draw_simple_table(cargoValuesData, [A4[0] / 5, A4[0] / 5 ], bold_cols=[0])
 
     # Insert line break after title
     raw_terms = data.get("termsAndConditions", "") or ""
@@ -71,7 +72,7 @@ def generate_invoice(buffer, data):
     terms_text = f"<b>Terms and Conditions</b><br/>{html_terms}"
     terms_paragraph = Paragraph(terms_text, styles['Normal'])
 
-    left_section = ([shipping, Spacer(0, 12)] if shipping else []) + [cargoValues]
+    left_section = ([shipping, Spacer(0, 12)] if shipping else []) + ([cargoValues] if cargoValues else [])
 
     elements.append(draw_independent_columns([left_section, terms_paragraph], innerVerticalColumns=True))
 
