@@ -2,17 +2,48 @@ from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
-from reportlab.lib.units import inch
-from babel.numbers import format_currency
 import datetime
+from babel.numbers import format_currency
 
 from templates.parts.contactDetails import draw_contact_details
 from templates.parts.htmlFlowables import html_to_flowables
-from templates.parts.layout import layout, PageNumCanvas, draw_independent_columns, draw_simple_table
+from templates.parts.layout import layout, PageNumCanvas, draw_independent_columns
 
 
 styles = getSampleStyleSheet()
 bold_style = ParagraphStyle(name='Bold', parent=styles['Normal'], fontName='Helvetica-Bold')
+section_heading_style = ParagraphStyle(
+    name='SectionHeading',
+    parent=styles['Normal'],
+    fontName='Helvetica-Bold',
+    fontSize=11,
+    spaceAfter=4,
+)
+regarding_label_style = ParagraphStyle(
+    name='RegardingLabel',
+    parent=styles['Normal'],
+    fontName='Helvetica-Bold',
+    fontSize=10,
+)
+regarding_value_style = ParagraphStyle(
+    name='RegardingValue',
+    parent=styles['Normal'],
+    fontSize=10,
+)
+amount_label_style = ParagraphStyle(
+    name='AmountLabel',
+    parent=styles['Normal'],
+    fontName='Helvetica-Bold',
+    fontSize=11,
+    alignment=2,  # right
+)
+amount_value_style = ParagraphStyle(
+    name='AmountValue',
+    parent=styles['Normal'],
+    fontName='Helvetica-Bold',
+    fontSize=16,
+    alignment=2,
+)
 
 STATUS_LABELS = {
     "open": "Open",
@@ -49,38 +80,42 @@ def generate_claim(buffer, data):
     elements = []
     currency = data.get("currency", "USD")
 
-    # Row 1: Company coordinates + claim meta
+    # ── Row 1: Company coordinates (left) + claim meta (right) ──
     coordinates = draw_contact_details(data.get("coordinates", None))
     details = _draw_claim_details(data, currency)
     elements.append(draw_independent_columns([coordinates, details]))
-    elements.append(Spacer(400, 20))
+    elements.append(Spacer(1, 20))
 
-    # Row 2: Supplier
+    # ── Row 2: Supplier ──
     supplier_block = draw_contact_details(data.get("supplier", None), "Claim Against")
     elements.append(draw_independent_columns([supplier_block, Spacer(1, 1)]))
-    elements.append(Spacer(400, 20))
+    elements.append(Spacer(1, 18))
 
-    # Row 3: Related documents + amount
-    elements.append(_draw_related_and_amount(data, currency))
-    elements.append(Spacer(400, 20))
+    # ── Row 3: Regarding (related docs as compact key-value lines) ──
+    regarding = _draw_regarding(data)
+    if regarding is not None:
+        elements.append(regarding)
+        elements.append(Spacer(1, 18))
 
-    # Row 4: Description (rich text — HTML from Quill, or legacy plain text)
+    # ── Row 4: Description (rich text — the substance of the claim) ──
+    elements.append(Paragraph("Description", section_heading_style))
     description = data.get("description", "") or ""
-    elements.append(Paragraph("<b>Description</b>", styles['Normal']))
-    elements.append(Spacer(1, 4))
     description_flowables = html_to_flowables(description)
     if description_flowables:
         elements.extend(description_flowables)
     else:
         elements.append(Paragraph("&nbsp;", styles['Normal']))
-    elements.append(Spacer(400, 16))
+    elements.append(Spacer(1, 20))
 
-    # Row 5: Resolution notes (only if present)
-    resolution = data.get("resolutionNotes", "") or ""
-    if resolution.strip():
+    # ── Row 5: Claimed amount — prominent, right-aligned, ruled ──
+    elements.append(_draw_amount_line(data, currency))
+
+    # ── Row 6: Resolution notes (only if present) ──
+    resolution = (data.get("resolutionNotes") or "").strip()
+    if resolution:
+        elements.append(Spacer(1, 20))
+        elements.append(Paragraph("Resolution Notes", section_heading_style))
         resolution_html = resolution.replace("\n", "<br/>")
-        elements.append(Paragraph("<b>Resolution Notes</b>", styles['Normal']))
-        elements.append(Spacer(1, 4))
         elements.append(Paragraph(resolution_html, styles['Normal']))
 
     pdf.build(
@@ -115,84 +150,62 @@ def _draw_claim_details(data, currency):
         ('LINEBELOW', (0, 0), (-1, -1), 0, colors.transparent),
         ('WORDWRAP', (0, 0), (-1, -1), 'CJK'),
     ]))
-
     return table
 
 
-def _draw_related_and_amount(data, currency):
-    right_align_style = ParagraphStyle(name='RightAlign', parent=styles['Normal'], alignment=2)
-    bold_right_align_style = ParagraphStyle(name='BoldRightAlign', parent=bold_style, alignment=2)
+def _draw_regarding(data):
+    """Compact 'Regarding:' block showing linked bill/order as key-value lines.
 
+    Returns None if there are no related documents so the caller can skip
+    the section entirely rather than emit an empty header.
+    """
     related_bill = data.get("relatedBill") or {}
     related_order = data.get("relatedOrder") or {}
 
-    rows = [['DETAIL', 'REFERENCE', 'AMOUNT']]
-
+    rows = []
     if related_bill.get("invoiceNumber"):
-        bill_currency = related_bill.get("currency") or currency
-        bill_total = related_bill.get("total")
-        bill_amount = (
-            format_currency(float(bill_total), bill_currency, '#,##0.00 ¤', locale='en_US')
-            if bill_total is not None else ''
-        )
         rows.append([
-            Paragraph("Related Bill", styles['Normal']),
-            Paragraph(related_bill['invoiceNumber'], styles['Normal']),
-            Paragraph(bill_amount, right_align_style),
+            Paragraph("Related Bill:", regarding_label_style),
+            Paragraph(related_bill['invoiceNumber'], regarding_value_style),
         ])
-
     if related_order.get("orderNumber"):
         rows.append([
-            Paragraph("Related Order", styles['Normal']),
-            Paragraph(related_order['orderNumber'], styles['Normal']),
-            Paragraph('', right_align_style),
+            Paragraph("Related Order:", regarding_label_style),
+            Paragraph(related_order['orderNumber'], regarding_value_style),
         ])
 
-    if len(rows) == 1:
-        rows.append([
-            Paragraph("—", styles['Normal']),
-            Paragraph("No related documents", styles['Normal']),
-            Paragraph('', right_align_style),
-        ])
+    if not rows:
+        return None
 
-    amount = float(data.get("amount") or 0)
-    rows.append([
-        '',
-        Paragraph('CLAIMED AMOUNT', bold_style),
-        Paragraph(format_currency(amount, currency, '#,##0.00 ¤', locale='en_US'), bold_right_align_style),
-    ])
-
-    body_rows = len(rows) - 2  # excluding header and total
-
-    table = Table(
-        rows,
-        repeatRows=1,
-        colWidths=[2.2 * inch, 3 * inch, 2.2 * inch],
-    )
-
-    style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#272b29')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+    table = Table(rows, colWidths=[110, 380])
+    table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 1),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+        ('LINEBELOW', (0, 0), (-1, -1), 0, colors.transparent),
+    ]))
+    return table
 
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+
+def _draw_amount_line(data, currency):
+    """Prominent 'Claimed Amount' line with a top rule, right-aligned."""
+    amount = float(data.get("amount") or 0)
+    formatted = format_currency(amount, currency, '#,##0.00 ¤', locale='en_US')
+
+    rows = [
+        [Paragraph("CLAIMED AMOUNT", amount_label_style)],
+        [Paragraph(formatted, amount_value_style)],
+    ]
+    table = Table(rows, colWidths=[A4[0] - 80])
+    table.setStyle(TableStyle([
+        ('LINEABOVE', (0, 0), (-1, 0), 1.2, colors.black),
         ('TOPPADDING', (0, 0), (-1, 0), 8),
-        ('LEFTPADDING', (0, 0), (-1, -1), 8),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-
-        ('BOTTOMPADDING', (0, 1), (-1, body_rows), 5),
-        ('TOPPADDING', (0, 1), (-1, body_rows), 5),
-
-        ('BOX', (0, 0), (-1, body_rows), 0.8, colors.black),
-        ('FONTNAME', (1, -1), (-1, -1), 'Helvetica-Bold'),
-    ])
-
-    style.add('BOX', (1, body_rows + 1), (-1, -1), 1.2, colors.black)
-    style.add('LINEABOVE', (0, body_rows + 1), (-1, body_rows + 1), 1.2, colors.black)
-    style.add('BOTTOMPADDING', (0, body_rows + 1), (-1, -1), 8)
-    style.add('TOPPADDING', (0, body_rows + 1), (-1, -1), 8)
-
-    table.setStyle(style)
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 2),
+        ('TOPPADDING', (0, 1), (-1, 1), 0),
+        ('BOTTOMPADDING', (0, 1), (-1, 1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+    ]))
     return table
