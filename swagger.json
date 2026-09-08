@@ -91,6 +91,26 @@
           "500": { "$ref": "#/components/responses/ServerError" }
         }
       }
+    },
+    "/pdf/claim": {
+      "post": {
+        "summary": "Generate a supplier claim PDF",
+        "operationId": "generateClaim",
+        "tags": ["PDF Generation"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ClaimRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/PdfResponse" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
     }
   },
   "components": {
@@ -328,6 +348,41 @@
           "total": { "type": "number", "description": "Credit note total" },
           "relatedInvoice": { "$ref": "#/components/schemas/RelatedInvoice" },
           "termsAndConditions": { "type": "string", "description": "Terms text (supports \\n for line breaks)" }
+        }
+      },
+      "RelatedBill": {
+        "type": "object",
+        "description": "Related bill reference for supplier claims.",
+        "properties": {
+          "invoiceNumber": { "type": "string", "description": "Bill number" },
+          "currency": { "type": "string", "description": "Bill currency" },
+          "total": { "type": "number", "description": "Bill total" }
+        }
+      },
+      "RelatedOrder": {
+        "type": "object",
+        "description": "Related purchase order reference.",
+        "properties": {
+          "orderNumber": { "type": "string", "description": "Purchase order number" }
+        }
+      },
+      "ClaimRequest": {
+        "type": "object",
+        "required": ["claimNumber", "issuedDate"],
+        "properties": {
+          "filename": { "type": "string", "description": "Output filename (default: claim.pdf)", "default": "claim.pdf" },
+          "claimNumber": { "type": "string", "description": "Claim number" },
+          "issuedDate": { "type": "string", "format": "date-time", "description": "Issue date (ISO 8601)" },
+          "resolvedDate": { "type": "string", "format": "date-time", "description": "Resolution date, when status is resolved or rejected (ISO 8601)" },
+          "status": { "type": "string", "enum": ["open", "in_progress", "resolved", "rejected"], "description": "Workflow status" },
+          "currency": { "type": "string", "description": "Currency code (default: USD)", "default": "USD" },
+          "amount": { "type": "number", "description": "Claimed amount" },
+          "description": { "type": "string", "description": "Description of the claim (supports \\n for line breaks)" },
+          "resolutionNotes": { "type": "string", "description": "Resolution notes, hidden if empty (supports \\n for line breaks)" },
+          "coordinates": { "$ref": "#/components/schemas/Contact" },
+          "supplier": { "$ref": "#/components/schemas/Contact" },
+          "relatedBill": { "$ref": "#/components/schemas/RelatedBill" },
+          "relatedOrder": { "$ref": "#/components/schemas/RelatedOrder" }
         }
       },
       "ErrorResponse": {

@@ -32,7 +32,7 @@ except Exception as e:
     logger.error(f"Failed to import svglib: {e}")
 
 try:
-    from templates import invoice, proforma, order, creditnote
+    from templates import invoice, proforma, order, creditnote, claim
     logger.info("All templates loaded successfully")
 except Exception as e:
     logger.error(f"Failed to import templates: {e}")
@@ -40,6 +40,18 @@ except Exception as e:
     raise
 
 app = Flask(__name__)
+
+# --- Internal auth ---
+
+PDFMAKER_SECRET = os.environ.get("PDFMAKER_SECRET", "")
+
+@app.before_request
+def check_internal_secret():
+    if request.path.startswith("/api-docs"):
+        return
+    secret = request.headers.get("X-Internal-Secret", "")
+    if not PDFMAKER_SECRET or secret != PDFMAKER_SECRET:
+        return jsonify(error="Forbidden"), 403
 
 # --- Swagger / OpenAPI docs ---
 
@@ -159,6 +171,28 @@ def generate_credit_note():
         )
     except Exception as e:
         logger.error(f"Failed to generate credit note: {e}")
+        logger.error(traceback.format_exc())
+        return jsonify(error=str(e)), 500
+
+@app.route('/pdf/claim', methods=['POST'])
+def generate_claim():
+    logger.info("Received request for /pdf/claim")
+    data = request.get_json()
+    pdf_buffer = io.BytesIO()
+
+    try:
+        claim.generate_claim(buffer=pdf_buffer, data=data)
+        pdf_buffer.seek(0)
+        filename = data.get("filename", 'claim.pdf')
+        logger.info(f"Successfully generated claim: {filename}")
+        return send_file(
+            pdf_buffer,
+            download_name=filename,
+            as_attachment=True,
+            mimetype='application/pdf'
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate claim: {e}")
         logger.error(traceback.format_exc())
         return jsonify(error=str(e)), 500
 
