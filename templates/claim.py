@@ -7,6 +7,7 @@ from babel.numbers import format_currency
 import datetime
 
 from templates.parts.contactDetails import draw_contact_details
+from templates.parts.htmlFlowables import html_to_flowables
 from templates.parts.layout import layout, PageNumCanvas, draw_independent_columns, draw_simple_table
 
 
@@ -63,12 +64,15 @@ def generate_claim(buffer, data):
     elements.append(_draw_related_and_amount(data, currency))
     elements.append(Spacer(400, 20))
 
-    # Row 4: Description
+    # Row 4: Description (rich text — HTML from Quill, or legacy plain text)
     description = data.get("description", "") or ""
-    description_html = description.replace("\n", "<br/>")
     elements.append(Paragraph("<b>Description</b>", styles['Normal']))
     elements.append(Spacer(1, 4))
-    elements.append(Paragraph(description_html or "&nbsp;", styles['Normal']))
+    description_flowables = html_to_flowables(description)
+    if description_flowables:
+        elements.extend(description_flowables)
+    else:
+        elements.append(Paragraph("&nbsp;", styles['Normal']))
     elements.append(Spacer(400, 16))
 
     # Row 5: Resolution notes (only if present)
