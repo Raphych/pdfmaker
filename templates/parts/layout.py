@@ -29,7 +29,25 @@ class PageNumCanvas(canvas.Canvas):
         self.header= kwargs.pop('header', 'Document')
         super().__init__(*args, **kwargs)
         self.pages = []
-        
+
+    #----------------------------------------------------------------------
+    def _apply_document_metadata(self):
+        """
+        Set explicit metadata on the underlying PDF Info dictionary.
+
+        Acrobat (and to a lesser extent Chrome's viewer) will silently fill in
+        missing metadata fields when opening a PDF, which marks the document
+        as "modified" and triggers a save prompt on close. Populating every
+        field ourselves gives Acrobat nothing to add.
+        """
+        self.setTitle(self.title)
+        self.setAuthor("Andes Paper Trading Inc.")
+        self.setSubject(self.header)
+        self.setCreator("Andes Paper Trading ERP")
+        # Note: Producer is set by reportlab and cannot be overridden through
+        # the public API, but it's a well-formed string so Acrobat doesn't
+        # touch it.
+
     #----------------------------------------------------------------------
     def showPage(self):
         """
@@ -37,14 +55,15 @@ class PageNumCanvas(canvas.Canvas):
         """
         self.pages.append(dict(self.__dict__))
         self._startPage()
-        
+
     #----------------------------------------------------------------------
     def save(self):
         """
         Add the page number to each page (page x of y)
         """
+        self._apply_document_metadata()
         page_count = len(self.pages)
-        
+
         for page in self.pages:
             self.__dict__.update(page)
             self.draw_page_number(page_count)
